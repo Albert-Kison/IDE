@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "codeeditor.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -19,8 +20,10 @@ public:
 
 private slots:
     void on_textEdit_textChanged();
+    // void onFileSelected(const QString &filePath);
 
 private:
     Ui::MainWindow *ui;
+    CodeEditor *editor;
 };
 #endif // MAINWINDOW_H

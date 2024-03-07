@@ -26,8 +26,12 @@ private slots:
     // whenever the text is scrolled, update the line number area widget
     void updateLineNumberArea(const QRect &rect, int dy);
 
+public slots:
+    void onFileSelected(const QString &filePath);
+
 private:
     QWidget *lineNumberArea;
+    QString currentFilePath;
 };
 
 #endif // CODEEDITOR_H

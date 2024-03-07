@@ -7,6 +7,12 @@
 #include <QDebug>
 #include <iostream>
 
+std::ostream&  operator <<(std::ostream &stream,const QString &str)
+{
+    stream << str.toLatin1().constData(); //or: stream << str.toStdString(); //??
+    return stream;
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -20,7 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
 
     // Create the CodeEditor widget and Highlighter
-    CodeEditor *editor = new CodeEditor(centralWidget);
+    editor = new CodeEditor(centralWidget);
     Highlighter *highlighter = new Highlighter(editor->document());
 
     FileViewer *fileViewer = new FileViewer(centralWidget);
@@ -31,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Set the central widget of MainWindow to the container widget
     setCentralWidget(centralWidget);
+
+    connect(fileViewer, &FileViewer::fileSelected, editor, &CodeEditor::onFileSelected);
 }
 
 MainWindow::~MainWindow()

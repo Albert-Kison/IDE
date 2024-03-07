@@ -1,5 +1,6 @@
 #include "codeeditor.h"
 #include "LineNumberArea.cpp"
+#include "QtCore/qfile.h"
 #include "QtGui/qpainter.h"
 #include <QTextBlock>
 
@@ -117,5 +118,33 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         top = bottom;
         bottom = top + qRound(blockBoundingRect(block).height());
         ++blockNumber;
+    }
+}
+
+void CodeEditor::onFileSelected(const QString &filePath) {
+    QFile file(filePath);
+
+    // Open the file in Read-Only mode
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        // Read the contents of the file
+        QByteArray fileData = file.readAll();
+
+        // Convert the data to QString
+        QString fileText(fileData);
+
+        // Set the contents of the CodeEditor
+        if (fileText.isEmpty()) {
+            setPlainText("Failed to open the file");
+        } else {
+            setPlainText(fileText);
+        }
+
+        // Close the file
+        file.close();
+
+        currentFilePath = filePath;
+    } else {
+        setPlainText("Failed to open the file: " + file.errorString());
+        return;
     }
 }

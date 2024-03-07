@@ -11,6 +11,12 @@ class FileViewer : public QWidget
 public:
     FileViewer(QWidget *parent = nullptr);
 
+private slots:
+    void openFileOfItem(QTableWidgetItem *item);
+
+signals:
+    void fileSelected(const QString &filePath);
+
 private:
     void find();
     void showFiles(const QStringList &paths);

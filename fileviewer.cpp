@@ -6,16 +6,15 @@
 #include <iostream>
 
 
-std::ostream&  operator <<(std::ostream &stream,const QString &str)
-{
-    stream << str.toLatin1().constData(); //or: stream << str.toStdString(); //??
-    return stream;
-}
+// std::ostream&  operator <<(std::ostream &stream,const QString &str)
+// {
+//     stream << str.toLatin1().constData(); //or: stream << str.toStdString(); //??
+//     return stream;
+// }
 
 FileViewer::FileViewer(QWidget *parent)
     : QWidget(parent) {
 
-    // find();
     createFilesTable();
 
     QGridLayout *mainLayout = new QGridLayout(this);
@@ -26,9 +25,9 @@ FileViewer::FileViewer(QWidget *parent)
 void FileViewer::find() {
     filesTable->setRowCount(0);
 
-    QString path = currentDir.absolutePath();
-    // QString path = "/Users/albertkison/desktop";
-    std::cout << path << std::endl;
+    // QString path = currentDir.absolutePath();
+    QString path = "/Users/albertkison/eclipse-workspace/HelloWorld/src";
+    // std::cout << path << std::endl;
     currentDir = QDir(path);
 
     QStringList filter;
@@ -80,5 +79,19 @@ void FileViewer::createFilesTable() {
     filesTable->setShowGrid(false);
     filesTable->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    connect(filesTable, &QTableWidget::itemActivated, this, &FileViewer::openFileOfItem);
+
     find();
+}
+
+void FileViewer::openFileOfItem(QTableWidgetItem *item)
+{
+    if (item == nullptr) {
+        return; // No item activated
+    }
+
+    // Get the absolute file path from the item's data
+    QString absoluteFilePath = item->data(absoluteFileNameRole).toString();
+
+    emit fileSelected(absoluteFilePath); // Emit the signal with the file path
 }
