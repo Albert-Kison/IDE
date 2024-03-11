@@ -7,6 +7,7 @@
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
     lineNumberArea = new LineNumberArea(this);
+    highlighter = new Highlighter(document());
 
     //  whenever block count changes, update the line number area width
     connect(this, &CodeEditor::blockCountChanged, this, &CodeEditor::updateLineNumberAreaWidth);
@@ -133,11 +134,7 @@ void CodeEditor::onFileSelected(const QString &filePath) {
         QString fileText(fileData);
 
         // Set the contents of the CodeEditor
-        if (fileText.isEmpty()) {
-            setPlainText("Failed to open the file");
-        } else {
-            setPlainText(fileText);
-        }
+        setPlainText(fileText);
 
         // Close the file
         file.close();

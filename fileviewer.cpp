@@ -2,7 +2,9 @@
 #include "QtCore/qdiriterator.h"
 #include "QtWidgets/qgridlayout.h"
 #include "QHeaderView"
+#include "QtWidgets/qmenu.h"
 #include <QDebug>
+#include <QFileDialog>
 #include <iostream>
 
 
@@ -79,6 +81,7 @@ void FileViewer::createFilesTable() {
     filesTable->setShowGrid(false);
     filesTable->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    connect(filesTable, &QTableWidget::customContextMenuRequested, this, &FileViewer::contextMenu);
     connect(filesTable, &QTableWidget::itemActivated, this, &FileViewer::openFileOfItem);
 
     find();
@@ -95,3 +98,39 @@ void FileViewer::openFileOfItem(QTableWidgetItem *item)
 
     emit fileSelected(absoluteFilePath); // Emit the signal with the file path
 }
+
+void FileViewer::contextMenu(const QPoint &pos) {
+    QMenu menu;
+    QAction *newFileAction = menu.addAction("New file");
+
+    connect(newFileAction, &QAction::triggered, this, &FileViewer::createNewFile);
+
+    menu.exec(filesTable->viewport()->mapToGlobal(pos));
+}
+
+void FileViewer::createNewFile() {
+    // Implement the logic to create a new file
+    std::cout << "Create new file" << std::endl;
+
+    // Get the current directory
+    QString currentDirectory = currentDir.absolutePath();
+
+    // Prompt the user to choose the file name and location
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Create New File"), currentDirectory, tr("All Files (*);;Text Files (*.txt)"));
+
+    if (!fileName.isEmpty()) {
+        QFile file(fileName);
+        if (file.open(QIODevice::WriteOnly)) {
+            // File opened successfully, you can write to it if needed
+            qDebug() << "New file created: " << fileName;
+            file.close();
+
+            // After creating the file, you may want to refresh the file list in the file viewer
+            find();
+        } else {
+            // Failed to open the file
+            qDebug() << "Failed to create new file: " << file.errorString();
+        }
+    }
+}
+

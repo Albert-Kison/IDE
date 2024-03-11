@@ -13,6 +13,8 @@ public:
 
 private slots:
     void openFileOfItem(QTableWidgetItem *item);
+    void contextMenu(const QPoint &pos);
+    void createNewFile();
 
 signals:
     void fileSelected(const QString &filePath);

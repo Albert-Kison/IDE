@@ -2,7 +2,6 @@
 #include "codeeditor.h"
 #include "./ui_mainwindow.h"
 #include "fileviewer.h"
-#include "highlighter.h"
 #include <QVBoxLayout>
 #include <QDebug>
 #include <iostream>
@@ -25,14 +24,15 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
 
-    // Create the CodeEditor widget and Highlighter
-    editor = new CodeEditor(centralWidget);
-    Highlighter *highlighter = new Highlighter(editor->document());
+    tabWidget = new QTabWidget;
+    editor = new CodeEditor();
+
+    tabWidget->addTab(editor, tr("Editor"));
 
     FileViewer *fileViewer = new FileViewer(centralWidget);
 
     // Add the CodeEditor widget to the layout
-    layout->addWidget(editor);
+    layout->addWidget(tabWidget);
     layout->addWidget(fileViewer);
 
     // Set the central widget of MainWindow to the container widget

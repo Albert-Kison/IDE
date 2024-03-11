@@ -25,5 +25,6 @@ private slots:
 private:
     Ui::MainWindow *ui;
     CodeEditor *editor;
+    QTabWidget *tabWidget;
 };
 #endif // MAINWINDOW_H

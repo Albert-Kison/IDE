@@ -2,6 +2,7 @@
 #define CODEEDITOR_H
 
 #include "QtWidgets/qplaintextedit.h"
+#include "highlighter.h"
 
 class CodeEditor : public QPlainTextEdit
 {
@@ -31,6 +32,7 @@ public slots:
 
 private:
     QWidget *lineNumberArea;
+    Highlighter *highlighter;
     QString currentFilePath;
 };
 
