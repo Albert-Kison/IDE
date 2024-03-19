@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "codeeditor.h"
 #include "./ui_mainwindow.h"
+#include "diagram.h"
 #include "fileviewer.h"
 #include <QVBoxLayout>
 #include <QDebug>
@@ -27,16 +28,21 @@ MainWindow::MainWindow(QWidget *parent)
     tabWidget = new QTabWidget;
     editor = new CodeEditor();
 
-    tabWidget->addTab(editor, tr("Editor"));
+    QWidget *parentWidget = new QWidget(this);
+    Diagram *diagramWidget = new Diagram();
+
+    // tabWidget->addTab(editor, tr("Editor"));
+    // tabWidget->addTab(diagramWidget, tr("Diagram"));
 
     FileViewer *fileViewer = new FileViewer(centralWidget);
 
+
     // Add the CodeEditor widget to the layout
-    layout->addWidget(tabWidget);
-    layout->addWidget(fileViewer);
+    // layout->addWidget(tabWidget);
+    // layout->addWidget(fileViewer);
 
     // Set the central widget of MainWindow to the container widget
-    setCentralWidget(centralWidget);
+    setCentralWidget(diagramWidget);
 
     connect(fileViewer, &FileViewer::fileSelected, editor, &CodeEditor::onFileSelected);
 }

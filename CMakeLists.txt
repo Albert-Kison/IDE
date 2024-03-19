@@ -27,6 +27,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         LineNumberArea.cpp
         codeeditor.h codeeditor.cpp
         fileviewer.h fileviewer.cpp
+        diagram.h diagram.cpp
+        diagramscene.h diagramscene.cpp
+        diagramitem.h
+        diagramitem.h diagramitem.cpp
+        diagramtextitem.h diagramtextitem.cpp
+        arrow.h arrow.cpp
+        Resources.qrc
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Test1 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
