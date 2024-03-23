@@ -57,7 +57,7 @@ void Diagram::createToolBox()
     QToolButton *textButton = new QToolButton;
     textButton->setCheckable(true);
     buttonGroup->addButton(textButton, InsertTextButton);
-    textButton->setIcon(QIcon(QPixmap(":/images/textpointer.png")));
+    textButton->setIcon(QIcon(QPixmap(":/images/images/textpointer.png")));
     textButton->setIconSize(QSize(50, 50));
 
     QGridLayout *textLayout = new QGridLayout;
@@ -214,7 +214,6 @@ void Diagram::createActions()
 
 void Diagram::createToolbars()
 {
-    //! [25]
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(deleteAction);
     editToolBar->addAction(toFrontAction);

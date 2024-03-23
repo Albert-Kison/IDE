@@ -40,9 +40,12 @@ MainWindow::MainWindow(QWidget *parent)
     // Add the CodeEditor widget to the layout
     // layout->addWidget(tabWidget);
     // layout->addWidget(fileViewer);
+    layout->addWidget(diagramWidget);
+
+    centralWidget->setLayout(layout);
 
     // Set the central widget of MainWindow to the container widget
-    setCentralWidget(diagramWidget);
+    setCentralWidget(centralWidget);
 
     connect(fileViewer, &FileViewer::fileSelected, editor, &CodeEditor::onFileSelected);
 }
