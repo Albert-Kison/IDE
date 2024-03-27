@@ -1,6 +1,8 @@
 #ifndef DIAGRAMSCENE_H
 #define DIAGRAMSCENE_H
 
+// This class adds functionality to handle DiagramItems, Arrows, and DiagramTextItems
+
 #include "diagramitem.h"
 #include "diagramtextitem.h"
 
@@ -23,6 +25,7 @@ class DiagramScene : public QGraphicsScene
     Q_OBJECT
 
 public:
+    // mouse click modes
     enum Mode { InsertItem, InsertLine, InsertText, MoveItem };
 
     explicit DiagramScene(QMenu *itemMenu, QObject *parent = nullptr);

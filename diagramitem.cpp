@@ -8,6 +8,7 @@
 
 
 
+// create an item according to its type
 DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
                          QGraphicsItem *parent)
     : QGraphicsPolygonItem(parent), myDiagramType(diagramType)
@@ -48,6 +49,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
 
 
 
+// used to remove Arrow items when they or DiagramItems they are connected to are removed from the scene
 void DiagramItem::removeArrow(Arrow *arrow)
 {
     arrows.removeAll(arrow);
@@ -55,6 +57,7 @@ void DiagramItem::removeArrow(Arrow *arrow)
 
 
 
+// called when the item is removed from the scene and removes all arrows that are connected to this item
 void DiagramItem::removeArrows()
 {
     // need a copy here since removeArrow() will
@@ -70,6 +73,7 @@ void DiagramItem::removeArrows()
 
 
 
+// add new arrow
 void DiagramItem::addArrow(Arrow *arrow)
 {
     arrows.append(arrow);
@@ -77,6 +81,7 @@ void DiagramItem::addArrow(Arrow *arrow)
 
 
 
+// get the image of the item to create icons for the tool buttons in the tool box
 QPixmap DiagramItem::image() const
 {
     QPixmap pixmap(250, 250);
@@ -91,15 +96,17 @@ QPixmap DiagramItem::image() const
 
 
 
+// show the context menu when the right mouse button is clicked
 void DiagramItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
     scene()->clearSelection();
-    setSelected(true);
+    setSelected(true);  // item must be selected to change its elevation with the bringToFront and sendToBack actions
     myContextMenu->popup(event->screenPos());
 }
 
 
 
+// update the position of the arrows when the item is moved
 QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
     if (change == QGraphicsItem::ItemPositionChange) {

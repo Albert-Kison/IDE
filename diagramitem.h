@@ -1,6 +1,8 @@
 #ifndef DIAGRAMITEM_H
 #define DIAGRAMITEM_H
 
+// This class represents a flowchart shape in the DiagramScene
+
 #include <QGraphicsPixmapItem>
 #include <QList>
 
@@ -13,12 +15,13 @@ QT_END_NAMESPACE
 
 class Arrow;
 
-//! [0]
+
 class DiagramItem : public QGraphicsPolygonItem
 {
 public:
+    // unique identifier of the class that is used by qgraphicsitem_cast(), which does dynamic casts of graphics items
     enum { Type = UserType + 15 };
-    enum DiagramType { Step, Conditional, StartEnd, Io };
+    enum DiagramType { Step, Conditional, StartEnd, Io };   // flowchart shapes
 
     DiagramItem(DiagramType diagramType, QMenu *contextMenu, QGraphicsItem *parent = nullptr);
 

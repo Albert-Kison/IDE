@@ -1,6 +1,13 @@
 #ifndef DIAGRAM_H
 #define DIAGRAM_H
 
+// This class provides the diagram scene with the tool bars and user interface
+// to allow the user to draw shapes, change their color, font, style,
+// and create relationships
+
+// manages interaction between the widgets
+// and the graphics scene, view, and items
+
 #include "diagramitem.h"
 
 #include <QMainWindow>
@@ -22,6 +29,7 @@ class QAbstractButton;
 class QGraphicsView;
 QT_END_NAMESPACE
 
+
 class Diagram : public QMainWindow
 {
     Q_OBJECT
@@ -31,10 +39,12 @@ public:
 private slots:
     void backgroundButtonGroupClicked(QAbstractButton *button);
     void buttonGroupClicked(QAbstractButton *button);
-    void deleteItem();
     void pointerGroupClicked();
+
+    void deleteItem();
     void bringToFront();
     void sendToBack();
+
     void itemInserted(DiagramItem *item);
     void textInserted(QGraphicsTextItem *item);
     void currentFontChanged(const QFont &font);
@@ -55,6 +65,9 @@ private:
     void createActions();
     void createMenus();
     void createToolbars();
+
+    bool eventFilter(QObject *obj, QEvent *event) override;
+
     QWidget *createBackgroundCellWidget(const QString &text,
                                         const QString &image);
     QWidget *createCellWidget(const QString &text,

@@ -3,6 +3,7 @@
 
 
 
+// create the item and set it movable and selectable
 DiagramTextItem::DiagramTextItem(QGraphicsItem *parent)
     : QGraphicsTextItem(parent)
 {
@@ -12,6 +13,7 @@ DiagramTextItem::DiagramTextItem(QGraphicsItem *parent)
 
 
 
+// emit the selectedChanged signal when the item is selected
 QVariant DiagramTextItem::itemChange(GraphicsItemChange change,
                                      const QVariant &value)
 {
@@ -22,6 +24,7 @@ QVariant DiagramTextItem::itemChange(GraphicsItemChange change,
 
 
 
+// emit the lostFocus signal when the text item loses focus to remove the item if it is empty
 void DiagramTextItem::focusOutEvent(QFocusEvent *event)
 {
     setTextInteractionFlags(Qt::NoTextInteraction);
@@ -31,6 +34,7 @@ void DiagramTextItem::focusOutEvent(QFocusEvent *event)
 
 
 
+// when mouse double click event is received, make the item editable
 void DiagramTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {
     if (textInteractionFlags() == Qt::NoTextInteraction)
