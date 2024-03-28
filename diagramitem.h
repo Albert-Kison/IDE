@@ -21,7 +21,7 @@ class DiagramItem : public QGraphicsPolygonItem
 public:
     // unique identifier of the class that is used by qgraphicsitem_cast(), which does dynamic casts of graphics items
     enum { Type = UserType + 15 };
-    enum DiagramType { Step, Conditional, StartEnd, Io };   // flowchart shapes
+    enum DiagramType { Step, Conditional, StartEnd, Io, Table };   // flowchart shapes
 
     DiagramItem(DiagramType diagramType, QMenu *contextMenu, QGraphicsItem *parent = nullptr);
 
@@ -36,10 +36,15 @@ public:
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 
 private:
     DiagramType myDiagramType;
     QPolygonF myPolygon;
+
+    QPolygonF tableNamePolygon;
+    QPolygonF itemListPolygon;
+
     QMenu *myContextMenu;
     QList<Arrow *> arrows;
 };

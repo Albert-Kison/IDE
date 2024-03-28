@@ -35,6 +35,18 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
                   << QPointF(100, 100) << QPointF(-100, 100)
                   << QPointF(-100, -100);
         break;
+    case Table:
+        // Create polygons for the table name and the item list
+        tableNamePolygon << QPointF(-100, -75) << QPointF(100, -75)
+                         << QPointF(100, -25) << QPointF(-100, -25)
+                         << QPointF(-100, -75);
+
+        itemListPolygon << QPointF(-100, -25) << QPointF(100, -25)
+                        << QPointF(100, 75) << QPointF(-100, 75)
+                        << QPointF(-100, -25);
+
+        myPolygon = tableNamePolygon + itemListPolygon;
+        break;
     default:
         myPolygon << QPointF(-120, -80) << QPointF(-70, 80)
                   << QPointF(120, 80) << QPointF(70, -80)

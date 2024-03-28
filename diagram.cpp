@@ -66,6 +66,7 @@ void Diagram::createToolBox()
     layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 0, 0);
     layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),0, 1);
     layout->addWidget(createCellWidget(tr("Input/Output"), DiagramItem::Io), 1, 0);
+    layout->addWidget(createCellWidget(tr("Table"), DiagramItem::Table), 1, 1);
 
 
     // add text button
@@ -82,7 +83,7 @@ void Diagram::createToolBox()
 
     QWidget *textWidget = new QWidget;
     textWidget->setLayout(textLayout);
-    layout->addWidget(textWidget, 1, 1);
+    layout->addWidget(textWidget, 2, 0);
 
     layout->setRowStretch(3, 10);
     layout->setColumnStretch(2, 10);
