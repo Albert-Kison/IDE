@@ -27,6 +27,8 @@ class QFont;
 class QToolButton;
 class QAbstractButton;
 class QGraphicsView;
+class QHBoxLayout;
+class QLineEdit;
 QT_END_NAMESPACE
 
 
@@ -46,6 +48,7 @@ private slots:
     void sendToBack();
 
     void itemInserted(DiagramItem *item);
+    // void itemClicked(DiagramItem *item);
     void textInserted(QGraphicsTextItem *item);
     void currentFontChanged(const QFont &font);
     void fontSizeChanged(const QString &size);
@@ -80,6 +83,9 @@ private:
 
     DiagramScene *scene;
     QGraphicsView *view;
+    QHBoxLayout *layout;
+    QWidget *tablePropertiesWidget;
+    QWidget *mainWidget;
 
     QAction *exitAction;
     QAction *addAction;

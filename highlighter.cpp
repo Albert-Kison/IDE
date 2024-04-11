@@ -12,22 +12,37 @@ Highlighter::Highlighter(QTextDocument *parent)
     keywordFormat.setForeground(Qt::darkMagenta);
     keywordFormat.setFontWeight(QFont::Bold);
     QStringList keywordPatterns;
-    keywordPatterns << "\\babstract\\b" << "\\bassert\\b" << "\\bboolean\\b"
-                    << "\\bbreak\\b" << "\\bbyte\\b" << "\\bcase\\b"
-                    << "\\bcatch\\b" << "\\bchar\\b" << "\\bclass\\b"
-                    << "\\bcontinue\\b" << "\\bdefault\\b" << "\\bdo\\b"
-                    << "\\bdouble\\b" << "\\belse\\b" << "\\benum\\b"
-                    << "\\bextends\\b" << "\\bfinal\\b" << "\\bfinally\\b"
-                    << "\\bfloat\\b" << "\\bfor\\b" << "\\bgoto\\b"
-                    << "\\bif\\b" << "\\binstanceof\\b" << "\\bint\\b"
-                    << "\\binterface\\b" << "\\blong\\b" << "\\bnative\\b"
-                    << "\\bpackage\\b" << "\\bprivate\\b" << "\\bprotected\\b"
-                    << "\\bpublic\\b" << "\\breturn\\b" << "\\bshort\\b"
-                    << "\\bstatic\\b" << "\\bstrictfp\\b" << "\\bsuper\\b"
-                    << "\\bswitch\\b" << "\\bsynchronized\\b" << "\\bthis\\b"
-                    << "\\bthrow\\b" << "\\bthrows\\b" << "\\btransient\\b"
-                    << "\\btry\\b" << "\\bvoid\\b" << "\\bvolatile\\b"
-                    << "\\bwhile\\b";
+    keywordPatterns << "\\bSELECT\\b" << "\\bFROM\\b" << "\\bWHERE\\b"
+                    << "\\bAND\\b" << "\\bOR\\b" << "\\bNOT\\b"
+                    << "\\bINSERT\\b" << "\\bINTO\\b" << "\\bVALUES\\b"
+                    << "\\bUPDATE\\b" << "\\bSET\\b" << "\\bDELETE\\b"
+                    << "\\bCREATE\\b" << "\\bTABLE\\b" << "\\bALTER\\b"
+                    << "\\bDROP\\b" << "\\bINDEX\\b" << "\\bVIEW\\b"
+                    << "\\bJOIN\\b" << "\\bINNER\\b" << "\\bLEFT\\b"
+                    << "\\bRIGHT\\b" << "\\bOUTER\\b" << "\\bFULL\\b"
+                    << "\\bON\\b" << "\\bGROUP\\b" << "\\bBY\\b"
+                    << "\\bORDER\\b" << "\\bASC\\b" << "\\bDESC\\b"
+                    << "\\bHAVING\\b" << "\\bDISTINCT\\b" << "\\bAS\\b"
+                    << "\\bCOUNT\\b" << "\\bSUM\\b" << "\\bAVG\\b"
+                    << "\\bMIN\\b" << "\\bMAX\\b" << "\\bIN\\b"
+                    << "\\bBETWEEN\\b" << "\\bLIKE\\b" << "\\bCASE\\b"
+                    << "\\bWHEN\\b" << "\\bTHEN\\b" << "\\bELSE\\b"
+                    << "\\bEND\\b" << "\\bIS\\b" << "\\bNULL\\b"
+                    << "\\bTRUE\\b" << "\\bFALSE\\b" << "\\bTOP\\b"
+                    << "\\bPRIMARY\\b" << "\\bKEY\\b";
+
+
+    QStringList sqlDataTypes;
+    sqlDataTypes << "\\bINT\\b" << "\\bVARCHAR\\b" << "\\bCHAR\\b"
+                 << "\\bTEXT\\b" << "\\bDATE\\b" << "\\bDATETIME\\b"
+                 << "\\bTIMESTAMP\\b" << "\\bDECIMAL\\b" << "\\bNUMERIC\\b"
+                 << "\\bFLOAT\\b" << "\\bREAL\\b" << "\\bDOUBLE\\b"
+                 << "\\bBOOLEAN\\b" << "\\bBIT\\b" << "\\bTINYINT\\b"
+                 << "\\bSMALLINT\\b" << "\\bMEDIUMINT\\b" << "\\bBIGINT\\b"
+                 << "\\bBINARY\\b" << "\\bVARBINARY\\b" << "\\bBLOB\\b"
+                 << "\\bTINYBLOB\\b" << "\\bMEDIUMBLOB\\b" << "\\bLONGBLOB\\b"
+                 << "\\bENUM\\b" << "\\bSET\\b";
+
 
     // highlight rules for each keyword
     foreach (const QString &pattern, keywordPatterns) {
@@ -36,34 +51,42 @@ Highlighter::Highlighter(QTextDocument *parent)
         highlightingRules.append(rule);
     }
 
-    // highlight rule for class names
-    classFormat.setFontWeight(QFont::Bold);
-    classFormat.setForeground(Qt::darkMagenta);
-    rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
-    rule.format = classFormat;
-    highlightingRules.append(rule);
-
-    // highlight rule for single line comments
-    singleLineCommentFormat.setForeground(Qt::red);
-    rule.pattern = QRegularExpression("//[^\n]*");
-    rule.format = singleLineCommentFormat;
-    highlightingRules.append(rule);
-
-    // highlight rule for multiline comments
-    multiLineCommentFormat.setForeground(Qt::red);
-
-    // highlight rule for strings
-    quotationFormat.setForeground(Qt::darkGreen);
-    rule.pattern = QRegularExpression("\".*\"");
-    rule.format = quotationFormat;
-    highlightingRules.append(rule);
-
-    // highlight rule for function names
     functionFormat.setFontItalic(true);
     functionFormat.setForeground(Qt::blue);
-    rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
-    rule.format = functionFormat;
-    highlightingRules.append(rule);
+    foreach (const QString &pattern, sqlDataTypes) {
+        rule.pattern = QRegularExpression(pattern);
+        rule.format = functionFormat;
+        highlightingRules.append(rule);
+    }
+
+    // // highlight rule for class names
+    // classFormat.setFontWeight(QFont::Bold);
+    // classFormat.setForeground(Qt::darkMagenta);
+    // rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
+    // rule.format = classFormat;
+    // highlightingRules.append(rule);
+
+    // // highlight rule for single line comments
+    // singleLineCommentFormat.setForeground(Qt::red);
+    // rule.pattern = QRegularExpression("//[^\n]*");
+    // rule.format = singleLineCommentFormat;
+    // highlightingRules.append(rule);
+
+    // // highlight rule for multiline comments
+    // multiLineCommentFormat.setForeground(Qt::red);
+
+    // // highlight rule for strings
+    // quotationFormat.setForeground(Qt::darkGreen);
+    // rule.pattern = QRegularExpression("\".*\"");
+    // rule.format = quotationFormat;
+    // highlightingRules.append(rule);
+
+    // // highlight rule for function names
+    // functionFormat.setFontItalic(true);
+    // functionFormat.setForeground(Qt::blue);
+    // rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
+    // rule.format = functionFormat;
+    // highlightingRules.append(rule);
 
     // regular expressions for multiline comments
     commentStartExpression = QRegularExpression("/\\*");

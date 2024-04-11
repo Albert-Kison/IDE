@@ -5,9 +5,17 @@
 #include "diagram.h"
 
 #include <QtWidgets>
+// #include <iostream>
+
+
+
+// std::ostream&  operator <<(std::ostream &stream,const QString &str)
+// {
+//     stream << str.toLatin1().constData(); //or: stream << str.toStdString(); //??
+//     return stream;
+// }
 
 const int InsertTextButton = 10;
-
 
 
 Diagram::Diagram()
@@ -32,17 +40,19 @@ Diagram::Diagram()
     createToolbars();
 
     // create horizontal layout and add widgets to it
-    QHBoxLayout *layout = new QHBoxLayout;
+    layout = new QHBoxLayout;
     layout->addWidget(toolBox);
 
     view = new QGraphicsView(scene);
     view->viewport()->installEventFilter(this);
     layout->addWidget(view);
 
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
+    tablePropertiesWidget = new QWidget;
 
-    setCentralWidget(widget);
+    mainWidget = new QWidget;
+    mainWidget->setLayout(layout);
+
+    setCentralWidget(mainWidget);
     setUnifiedTitleAndToolBarOnMac(true);
 }
 
@@ -714,17 +724,190 @@ void Diagram::lineButtonTriggered()
 
 
 
-// changes the state of the text buttons
-// only text items emit this signal
+// changes the UI if another item is selected
 void Diagram::itemSelected(QGraphicsItem *item)
 {
     DiagramTextItem *textItem =
         qgraphicsitem_cast<DiagramTextItem *>(item);
 
-    QFont font = textItem->font();
-    fontCombo->setCurrentFont(font);
-    fontSizeCombo->setEditText(QString().setNum(font.pointSize()));
-    boldAction->setChecked(font.weight() == QFont::Bold);
-    italicAction->setChecked(font.italic());
-    underlineAction->setChecked(font.underline());
+    DiagramItem *selectedItem =
+        qgraphicsitem_cast<DiagramItem *>(item);
+
+    // change the text buttons if a text item is selected
+    if (textItem) {
+        QFont font = textItem->font();
+        fontCombo->setCurrentFont(font);
+        fontSizeCombo->setEditText(QString().setNum(font.pointSize()));
+        boldAction->setChecked(font.weight() == QFont::Bold);
+        italicAction->setChecked(font.italic());
+        underlineAction->setChecked(font.underline());
+    }
+
+    // show the table properties widget if a table item is selected
+    if (selectedItem && selectedItem->myDiagramType == DiagramItem::Table) {
+
+        // delete the existing layout
+        if (tablePropertiesWidget->layout()) {
+            QLayoutItem *child;
+            while ((child = tablePropertiesWidget->layout()->takeAt(0)) != nullptr) {
+                delete child;
+            }
+            delete tablePropertiesWidget->layout();
+            tablePropertiesWidget->hide();
+        }
+
+        QVBoxLayout *verticalLayout = new QVBoxLayout;
+        verticalLayout->setAlignment(Qt::AlignTop);
+        // selectedItem->updateText("New text");
+        // std::cout << selectedItem->textItem->toPlainText() << std::endl;
+
+        QLabel *tableNameLabel = new QLabel("Table name:");
+        // gridLayout->addWidget(tableNameLabel, 0, 0);
+
+        QLineEdit *lineEdit = new QLineEdit;
+
+        if (selectedItem->textItem) {
+            lineEdit->setText(selectedItem->textItem->toPlainText());
+        }
+        lineEdit->setFixedWidth(100);
+
+        // disconnect(lineEdit, &QLineEdit::textChanged, nullptr, nullptr);
+        // disconnect(selectedItem->textItem->document(), &QTextDocument::contentsChanged, nullptr, nullptr);
+
+        connect(lineEdit, &QLineEdit::textChanged, selectedItem, &DiagramItem::updateText);
+
+        QHBoxLayout *tableNameLayout = new QHBoxLayout;
+        tableNameLayout->addWidget(tableNameLabel);
+        tableNameLayout->addWidget(lineEdit);
+        verticalLayout->addLayout(tableNameLayout);
+
+        // Create the close button
+        QPushButton *closeButton = new QPushButton("Close");
+        // gridLayout->addWidget(closeButton, 1, 0, 1, 2); // Add the button to the layout
+
+        // Connect the close button's clicked signal to a slot that hides the tablePropertiesWidget
+        connect(closeButton, &QPushButton::clicked, [this, selectedItem]() {
+            scene->clearSelection(); // Deselect all items in the scene
+            tablePropertiesWidget->hide(); // Hide the tablePropertiesWidget
+        });
+
+        QHBoxLayout *closeButtonLayout = new QHBoxLayout;
+        closeButtonLayout->addWidget(closeButton);
+        verticalLayout->addLayout(closeButtonLayout);
+
+        // Create the "Add Item" button
+        QPushButton *addItemButton = new QPushButton("Add Item");
+        // gridLayout->addWidget(addItemButton, 2, 0, 1, 2);
+
+        QHBoxLayout *addItemButtonLayout = new QHBoxLayout;
+        addItemButtonLayout->addWidget(addItemButton);
+        verticalLayout->addLayout(addItemButtonLayout);
+
+        // Connect the add item button's clicked signal to a slot that adds the item
+        connect(addItemButton, &QPushButton::clicked, [this, verticalLayout, selectedItem]() {
+            // QLabel *itemNameLabel = new QLabel("Item name:");
+            QLineEdit *nameLineEdit = new QLineEdit;
+            nameLineEdit->setPlaceholderText("Item name");
+            nameLineEdit->setFixedWidth(100);
+
+            // QLabel *dataTypeLabel = new QLabel("Data type:");
+            QComboBox *dataTypeComboBox = new QComboBox;
+            // Add SQL data types to the combo box
+            dataTypeComboBox->addItem("INT");
+            dataTypeComboBox->addItem("VARCHAR");
+            dataTypeComboBox->addItem("DATE");
+
+            // Add more data types as needed
+
+            QHBoxLayout *itemLayout = new QHBoxLayout;
+            itemLayout->addWidget(nameLineEdit);
+            itemLayout->addWidget(dataTypeComboBox);
+            verticalLayout->addLayout(itemLayout);
+
+            // Create the "Add" button
+            QPushButton *addButton = new QPushButton("Add");
+
+            // Connect the add button's clicked signal to a slot that adds the item
+            connect(addButton, &QPushButton::clicked, [this, nameLineEdit, dataTypeComboBox, selectedItem, addButton, verticalLayout]() {
+                // Retrieve the entered item name and data type
+                QString itemName = nameLineEdit->text();
+                QString dataType = dataTypeComboBox->currentText();
+                // Do something with the item name and data type, such as adding the item to the table
+                // You can emit a signal here to handle the item addition in the scene
+                // Example: emit addItemSignal(itemName, dataType);
+                if (!itemName.isEmpty()) {
+                    int index = selectedItem->addItem(itemName, dataType);
+
+                    connect(nameLineEdit, &QLineEdit::textChanged, this, [this, selectedItem, index](const QString &text) {
+                        // std::cout << selectedItem->items.size() << " " << text << std::endl;
+                        selectedItem->updateItemText(index, text);
+                    });
+
+                    nameLineEdit->clearFocus();
+
+                    // Delete the "Add" button after the item has been added
+                    addButton->deleteLater();
+
+                    // Create the "Delete" button
+                    QPushButton *deleteButton = new QPushButton("Delete");
+
+                    connect(deleteButton, &QPushButton::clicked, [deleteButton, selectedItem, index]() {
+                        selectedItem->removeColumn(index);
+                    });
+
+                    QHBoxLayout *deleteButtonLayout = new QHBoxLayout;
+                    deleteButtonLayout->addWidget(deleteButton);
+                    verticalLayout->addLayout(deleteButtonLayout);
+                }
+            });
+
+            QHBoxLayout *addButtonLayout = new QHBoxLayout;
+            addButtonLayout->addWidget(addButton);
+            verticalLayout->addLayout(addButtonLayout);
+
+            // Add the widgets to the layout
+            /*gridLayout->addWidget(itemNameLabel, 3, 0);
+            gridLayout->addWidget(nameLineEdit, 3, 1);
+            gridLayout->addWidget(dataTypeLabel, 4, 0);
+            gridLayout->addWidget(dataTypeComboBox, 4, 1);
+            gridLayout->addWidget(addButton, 5, 0, 1, 2);*/ // Add the button to the layout
+        });
+
+        for (int i = 0; i < selectedItem->columns.size(); ++i) {
+            QHBoxLayout *itemLayout = new QHBoxLayout;
+
+            QLineEdit *nameLineEdit = new QLineEdit;
+            nameLineEdit->setPlaceholderText("Item name");
+            nameLineEdit->setFixedWidth(100);
+            nameLineEdit->setText(selectedItem->columns[i].name);
+
+            QComboBox *dataTypeComboBox = new QComboBox;
+            dataTypeComboBox->addItem("INT");
+            dataTypeComboBox->addItem("VARCHAR");
+            dataTypeComboBox->addItem("DATE");
+            // Add more data types as needed
+            dataTypeComboBox->setCurrentText(selectedItem->columns[i].dataType);
+
+            itemLayout->addWidget(nameLineEdit);
+            itemLayout->addWidget(dataTypeComboBox);
+            verticalLayout->addLayout(itemLayout);
+        }
+
+        // gridLayout->addWidget(lineEdit, 0, 1);
+        // gridLayout->setRowStretch(3, 10);
+        // gridLayout->setColumnStretch(10, 10);
+
+        // itemPropertiesWidget->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
+        // itemPropertiesWidget->setMinimumWidth(gridLayout->sizeHint().width());
+
+        tablePropertiesWidget = new QWidget;
+        // tablePropertiesWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        tablePropertiesWidget->setLayout(verticalLayout);
+        tablePropertiesWidget->setVisible(true);
+        layout->addWidget(tablePropertiesWidget);
+
+        // mainWidget->setLayout(layout);
+    } else {
+        tablePropertiesWidget->hide();
+    }
 }

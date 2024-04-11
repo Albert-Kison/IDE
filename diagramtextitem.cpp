@@ -34,6 +34,14 @@ void DiagramTextItem::focusOutEvent(QFocusEvent *event)
 
 
 
+void DiagramTextItem::keyPressEvent(QKeyEvent *event)
+{
+    QGraphicsTextItem::keyPressEvent(event);
+    emit textChanged();
+}
+
+
+
 // when mouse double click event is received, make the item editable
 void DiagramTextItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 {

@@ -7,11 +7,11 @@
 #include <QDebug>
 #include <iostream>
 
-std::ostream&  operator <<(std::ostream &stream,const QString &str)
-{
-    stream << str.toLatin1().constData(); //or: stream << str.toStdString(); //??
-    return stream;
-}
+// std::ostream&  operator <<(std::ostream &stream,const QString &str)
+// {
+//     stream << str.toLatin1().constData(); //or: stream << str.toStdString(); //??
+//     return stream;
+// }
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -31,16 +31,16 @@ MainWindow::MainWindow(QWidget *parent)
     QWidget *parentWidget = new QWidget(this);
     Diagram *diagramWidget = new Diagram();
 
-    // tabWidget->addTab(editor, tr("Editor"));
-    // tabWidget->addTab(diagramWidget, tr("Diagram"));
+    tabWidget->addTab(editor, tr("Editor"));
+    tabWidget->addTab(diagramWidget, tr("Diagram"));
 
     FileViewer *fileViewer = new FileViewer(centralWidget);
 
 
     // Add the CodeEditor widget to the layout
-    // layout->addWidget(tabWidget);
+    layout->addWidget(tabWidget);
     // layout->addWidget(fileViewer);
-    layout->addWidget(diagramWidget);
+    // layout->addWidget(diagramWidget);
 
     centralWidget->setLayout(layout);
 

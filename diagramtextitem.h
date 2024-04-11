@@ -24,6 +24,7 @@ public:
 signals:
     void lostFocus(DiagramTextItem *item);
     void selectedChange(QGraphicsItem *item);
+    void textChanged();
 
 protected:
     // used to notify the DiagramScene when the text item loses focus and gets selected
@@ -31,6 +32,7 @@ protected:
     void focusOutEvent(QFocusEvent *event) override;
 
     void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 };
 
 #endif // DIAGRAMTEXTITEM_H

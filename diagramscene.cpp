@@ -127,6 +127,8 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         // create a new DiagramItem and add it to the scene
         item = new DiagramItem(myItemType, myItemMenu);
         item->setBrush(myItemColor);
+        connect(item, &DiagramItem::selectedChange,
+                this, &DiagramScene::itemSelected);
         addItem(item);
         item->setPos(mouseEvent->scenePos());
         emit itemInserted(item);

@@ -3,8 +3,11 @@
 
 // This class represents a flowchart shape in the DiagramScene
 
+#include "diagramtextitem.h"
+
 #include <QGraphicsPixmapItem>
 #include <QList>
+#include <QGraphicsTextItem>
 
 QT_BEGIN_NAMESPACE
 class QPixmap;
@@ -16,8 +19,10 @@ QT_END_NAMESPACE
 class Arrow;
 
 
-class DiagramItem : public QGraphicsPolygonItem
+class DiagramItem : public QObject, public QGraphicsPolygonItem
 {
+    Q_OBJECT
+
 public:
     // unique identifier of the class that is used by qgraphicsitem_cast(), which does dynamic casts of graphics items
     enum { Type = UserType + 15 };
@@ -30,16 +35,42 @@ public:
     DiagramType diagramType() const { return myDiagramType; }
     QPolygonF polygon() const { return myPolygon; }
     void addArrow(Arrow *arrow);
+    int addItem(QString& name, QString& type);
+    void updateText(const QString& newText);
+    void updateItemText(int index, const QString &newText);
+    void removeColumn(int index);
+    void drawColumns();
+    void namePolygon(const QPolygonF& polygon);
     QPixmap image() const;
     int type() const override { return Type; }
+
+    DiagramType myDiagramType;
+    QGraphicsTextItem *textItem;
+
+    // QStringList items;
+
+    struct Column
+    {
+        QString name;
+        QString dataType;
+    };
+
+    QVector<Column> columns;
+
+public slots:
+    void updateTextPosition();    
+
+signals:
+    void selectedChange(QGraphicsItem *item);
 
 protected:
     void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
-    void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
+    // void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+    // void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
+    // void keyPressEvent(QKeyEvent *event) override;
 
 private:
-    DiagramType myDiagramType;
     QPolygonF myPolygon;
 
     QPolygonF tableNamePolygon;
