@@ -229,7 +229,7 @@ void DiagramItem::drawColumns() {
 
     qreal y = itemListPolygon.boundingRect().y(); // Initial y-coordinate for the first item name
     for (const Column &column : columns) {
-        QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name);
+        QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name + " (" + column.dataType + ")");
         textItem->setDefaultTextColor(Qt::red);
 
         // Set the position of the text item relative to the itemListPolygon
@@ -260,19 +260,11 @@ int DiagramItem::addItem(QString& name, QString &type) {
 
 
 
-void DiagramItem::updateItemText(int index, const QString &newText) {
+void DiagramItem::updateItem(int index, const QString &newText, QString &newDataType) {
     columns[index].name = newText;
+    columns[index].dataType = newDataType;
 
-    // Iterate over the child items of the DiagramItem
-    foreach (QGraphicsItem *item, childItems()) {
-        QGraphicsTextItem *textItem = qgraphicsitem_cast<QGraphicsTextItem*>(item);
-        // Check if the item is a QGraphicsTextItem and its index matches the updated item
-        if (textItem && childItems().indexOf(textItem) == index + 1) {
-            // Update the text of the QGraphicsTextItem
-            textItem->setPlainText(newText);
-            break; // No need to continue iterating once the item is found and updated
-        }
-    }
+    drawColumns();
 }
 
 

@@ -108,3 +108,14 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
         painter->drawLine(myLine);
     }
 }
+
+
+
+// emit the selectedChanged signal when the item is selected
+// QVariant Arrow::itemChange(GraphicsItemChange change,
+//                                      const QVariant &value)
+// {
+//     if (change == QGraphicsLineItem::ItemSelectedHasChanged)
+//         emit selectedChange(this);
+//     return value;
+// }

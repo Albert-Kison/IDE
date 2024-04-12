@@ -28,6 +28,7 @@ class QToolButton;
 class QAbstractButton;
 class QGraphicsView;
 class QHBoxLayout;
+class QVBoxLayout;
 class QLineEdit;
 QT_END_NAMESPACE
 
@@ -68,6 +69,8 @@ private:
     void createActions();
     void createMenus();
     void createToolbars();
+    void createColumnsWidgets(QVBoxLayout *verticalLayout, DiagramItem *item);
+    void deleteLayout(QLayout *layout);
 
     bool eventFilter(QObject *obj, QEvent *event) override;
 

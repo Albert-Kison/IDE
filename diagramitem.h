@@ -37,7 +37,7 @@ public:
     void addArrow(Arrow *arrow);
     int addItem(QString& name, QString& type);
     void updateText(const QString& newText);
-    void updateItemText(int index, const QString &newText);
+    void updateItem(int index, const QString& newText, QString& newDataType);
     void removeColumn(int index);
     void drawColumns();
     void namePolygon(const QPolygonF& polygon);
