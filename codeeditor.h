@@ -29,6 +29,7 @@ private slots:
 
 public slots:
     void onFileSelected(const QString &filePath);
+    void onCodeGenerated(const QString &code);
 
 private:
     QWidget *lineNumberArea;

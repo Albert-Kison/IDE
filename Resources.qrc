@@ -15,5 +15,6 @@
         <file>images/sendtoback.png</file>
         <file>images/textpointer.png</file>
         <file>images/underline.png</file>
+        <file>images/sql-server.png</file>
     </qresource>
 </RCC>

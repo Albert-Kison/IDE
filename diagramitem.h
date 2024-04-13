@@ -3,7 +3,7 @@
 
 // This class represents a flowchart shape in the DiagramScene
 
-#include "diagramtextitem.h"
+// #include "diagramtextitem.h"
 
 #include <QGraphicsPixmapItem>
 #include <QList>
@@ -41,11 +41,12 @@ public:
     void removeColumn(int index);
     void drawColumns();
     void namePolygon(const QPolygonF& polygon);
+    QStringList getColumns() const;
     QPixmap image() const;
     int type() const override { return Type; }
 
     DiagramType myDiagramType;
-    QGraphicsTextItem *textItem;
+    QGraphicsTextItem *tableName;
 
     // QStringList items;
 

@@ -8,9 +8,9 @@
 
 class DiagramItem;
 
-class Arrow : public QGraphicsLineItem
+class Arrow : public QObject, public QGraphicsLineItem
 {
-    // Q_OBJECT
+    Q_OBJECT
 
 public:
     enum { Type = UserType + 4 };
@@ -30,13 +30,13 @@ public:
 
     void updatePosition();
 
-// signals:
-//     void selectedChange(QGraphicsItem *item);
+signals:
+    void selectedChange(QGraphicsItem *item);
 
 protected:
     // in order to draw the head of an arrow
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
-    // QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
+    QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 private:
     // diagram items that the arrow connects

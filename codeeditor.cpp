@@ -145,3 +145,8 @@ void CodeEditor::onFileSelected(const QString &filePath) {
         return;
     }
 }
+
+
+void CodeEditor::onCodeGenerated(const QString &code) {
+    setPlainText(code);
+}

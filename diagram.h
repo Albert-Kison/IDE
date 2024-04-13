@@ -47,6 +47,7 @@ private slots:
     void deleteItem();
     void bringToFront();
     void sendToBack();
+    void generateSql();
 
     void itemInserted(DiagramItem *item);
     // void itemClicked(DiagramItem *item);
@@ -63,6 +64,9 @@ private slots:
     void handleFontChange();
     void itemSelected(QGraphicsItem *item);
     // void about();
+
+signals:
+    void generateSqlClicked();
 
 private:
     void createToolBox();
@@ -87,12 +91,14 @@ private:
     DiagramScene *scene;
     QGraphicsView *view;
     QHBoxLayout *layout;
-    QWidget *tablePropertiesWidget;
+    // QWidget *tablePropertiesWidget;
+    QWidget *sideWidget;
     QWidget *mainWidget;
 
     QAction *exitAction;
     QAction *addAction;
     QAction *deleteAction;
+    QAction *generateSqlAction;
 
     QAction *toFrontAction;
     QAction *sendBackAction;

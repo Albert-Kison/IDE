@@ -219,7 +219,9 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
             startItem->addArrow(arrow);
             endItem->addArrow(arrow);
             arrow->setZValue(-1000.0);
-            // connect(arrow, &Arrow::selectedChange, this, &DiagramScene::itemSelected);
+            connect(arrow, &Arrow::selectedChange, this, &DiagramScene::itemSelected);
+            this->clearSelection();
+            arrow->setSelected(true);
             addItem(arrow);
 
             // update its position when the items are being moved

@@ -25,7 +25,7 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
     : QGraphicsPolygonItem(parent), myDiagramType(diagramType)
     , myContextMenu(contextMenu)
 {
-    textItem = nullptr;
+    tableName = nullptr;
 
     QPainterPath path;
     switch (myDiagramType) {
@@ -80,30 +80,30 @@ DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
 
 
 void DiagramItem::namePolygon(const QPolygonF& polygon) {
-    textItem = new QGraphicsTextItem();
-    textItem->setPlainText("New name");
+    tableName = new QGraphicsTextItem();
+    tableName->setPlainText("New name");
     // textItem->setFlags(ItemIsSelectable | ItemIsFocusable);
 
     // Set the width of the bounding rectangle
-    textItem->setTextWidth(200);
+    tableName->setTextWidth(200);
 
     // Set the alignment of the text within the bounding rectangle
     QTextOption textOption;
     textOption.setAlignment(Qt::AlignCenter);
     textOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
-    textItem->document()->setDefaultTextOption(textOption);
+    tableName->document()->setDefaultTextOption(textOption);
 
     // Put the text in the center
     QPointF center = polygon.boundingRect().center();
-    textItem->setPos(center.x() - textItem->boundingRect().width() / 2,
-                     center.y() - textItem->boundingRect().height() / 2);
-    textItem->setDefaultTextColor(Qt::black);
+    tableName->setPos(center.x() - tableName->boundingRect().width() / 2,
+                     center.y() - tableName->boundingRect().height() / 2);
+    tableName->setDefaultTextColor(Qt::black);
 
     // Set the DiagramItem as the parent item of the text item
-    textItem->setParentItem(this);
+    tableName->setParentItem(this);
 
     // Add the text item to the scene
-    scene()->addItem(textItem);
+    scene()->addItem(tableName);
 }
 
 
@@ -140,23 +140,33 @@ void DiagramItem::addArrow(Arrow *arrow)
 
 
 
+QStringList DiagramItem::getColumns() const {
+    QStringList columnNames;
+    for (const auto& column : columns) {
+        columnNames.append(column.name + " (" + column.dataType + ")");
+    }
+    return columnNames;
+}
+
+
+
 void DiagramItem::updateText(const QString& newText) {
-    textItem->setPlainText(newText);
+    tableName->setPlainText(newText);
 }
 
 
 
 void DiagramItem::updateTextPosition() {
     // Ensure that the text item exists
-    if (!textItem)
+    if (!tableName)
         return;
 
     // std::cout << "iodhfier" << std::endl;
 
     // Calculate the new position based on the center point of the item's polygon
     QPointF center = polygon().boundingRect().center();
-    textItem->setPos(center.x() - textItem->boundingRect().width() / 2,
-                     center.y() - textItem->boundingRect().height() / 2);
+    tableName->setPos(center.x() - tableName->boundingRect().width() / 2,
+                     center.y() - tableName->boundingRect().height() / 2);
 }
 
 
@@ -276,71 +286,3 @@ void DiagramItem::removeColumn(int index) {
 
     drawColumns();
 }
-
-
-
-// void DiagramItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
-// {
-//     if (event->button() == Qt::LeftButton) {
-//         emit itemClicked(this);
-//     }
-
-//     QGraphicsItem::mousePressEvent(event);
-// }
-
-
-
-// void DiagramItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
-// {
-//     if (event->button() == Qt::LeftButton) {
-//         // Get the position of the click relative to the DiagramItem
-//         QPointF pos = mapFromScene(event->scenePos());
-
-//         // get the polygon that was clicked
-//         QPolygonF clickedPolygon = this->polygon();
-//         if (myDiagramType == DiagramType::Table) {
-//             // only allow to change the text in the tableNamePolygon
-//             if (itemListPolygon.containsPoint(pos, Qt::OddEvenFill)) {
-//                 QStringList items;
-//                 items << "orfoirehf" << "uierhfieh" << "iwhhrfiuheri" << "iuhihfeirhu";
-
-//                 // Update itemListPolygon based on the number of items
-//                 itemListPolygon.clear();
-//                 itemListPolygon << QPointF(-100, -25) << QPointF(100, -25)
-//                                 << QPointF(100, 75 + 20 * items.size()) << QPointF(-100, 75 + 20 * items.size())
-//                                 << QPointF(-100, -25);
-
-//                 // Update tablePolygon by combining tableNamePolygon and itemListPolygon
-//                 myPolygon = tableNamePolygon + itemListPolygon;
-
-//                 // Update the path of the table item
-//                 setPolygon(myPolygon);
-
-//                 // QPointF center = clickedPolygon.boundingRect().center();
-
-//                 // Loop through each point of the polygon and map it to scene coordinates
-//                 QPolygonF sceneItemListPolygon;
-//                 for (const QPointF &point : itemListPolygon) {
-//                     QPointF scenePoint = mapToScene(point);
-//                     sceneItemListPolygon << scenePoint;
-//                 }
-
-//                 // Add item names
-//                 // std::cout << "Start y coordinate: " << sceneItemListPolygon.boundingRect().y() << std::endl;
-//                 qreal y = sceneItemListPolygon.boundingRect().y(); // Initial y-coordinate for the first item name
-//                 for (const QString &itemName : items) {
-//                     QGraphicsTextItem *textItem = new QGraphicsTextItem(itemName);
-//                     textItem->setDefaultTextColor(Qt::black);
-
-//                     // Set the position of the text item relative to the itemListPolygon
-//                     textItem->setPos(sceneItemListPolygon.boundingRect().x() + 10, y);
-
-//                     scene()->addItem(textItem);
-
-//                     // Adjust the y-coordinate to ensure the text remains inside the itemListPolygon
-//                     y += sceneItemListPolygon.boundingRect().height() / items.size(); // Adjust as needed
-//                 }
-//             }
-//         }
-//     }
-// }

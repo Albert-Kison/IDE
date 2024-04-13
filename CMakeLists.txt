@@ -34,6 +34,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         diagramtextitem.h diagramtextitem.cpp
         arrow.h arrow.cpp
         Resources.qrc
+        sqlcodegenerator.h sqlcodegenerator.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Test1 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

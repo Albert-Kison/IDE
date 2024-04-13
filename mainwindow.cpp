@@ -3,6 +3,7 @@
 #include "./ui_mainwindow.h"
 #include "diagram.h"
 #include "fileviewer.h"
+#include "sqlcodegenerator.h";
 #include <QVBoxLayout>
 #include <QDebug>
 #include <iostream>
@@ -21,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     std::cout << "path in main" << std::endl;
 
+    SQLCodeGenerator *sqlCodeGenerator = new SQLCodeGenerator();
+
     // Create a container widget to hold the CodeEditor
     QWidget *centralWidget = new QWidget(this);
     QVBoxLayout *layout = new QVBoxLayout(centralWidget);
@@ -28,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     tabWidget = new QTabWidget;
     editor = new CodeEditor();
 
-    QWidget *parentWidget = new QWidget(this);
+    // QWidget *parentWidget = new QWidget(this);
     Diagram *diagramWidget = new Diagram();
 
     tabWidget->addTab(editor, tr("Editor"));
@@ -48,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(centralWidget);
 
     connect(fileViewer, &FileViewer::fileSelected, editor, &CodeEditor::onFileSelected);
+    connect(diagramWidget, &Diagram::generateSqlClicked, sqlCodeGenerator, &SQLCodeGenerator::onGenerateSqlCodeClicked);
+    connect(sqlCodeGenerator, &SQLCodeGenerator::codeGenerated, editor, &CodeEditor::onCodeGenerated);
 }
 
 MainWindow::~MainWindow()

@@ -47,7 +47,8 @@ Diagram::Diagram()
     view->viewport()->installEventFilter(this);
     layout->addWidget(view);
 
-    tablePropertiesWidget = new QWidget;
+    // tablePropertiesWidget = new QWidget;
+    sideWidget = new QWidget;
 
     mainWidget = new QWidget;
     mainWidget->setLayout(layout);
@@ -230,6 +231,10 @@ void Diagram::createActions()
     deleteAction->setStatusTip(tr("Delete item from diagram"));
     connect(deleteAction, &QAction::triggered, this, &Diagram::deleteItem);
 
+    generateSqlAction = new QAction(QIcon(":/images/images/sql-server.png"), tr("&Generate SQL"), this);
+    generateSqlAction->setStatusTip(tr("Generate SQL code"));
+    connect(generateSqlAction, &QAction::triggered, this, &Diagram::generateSql);
+
     // quit the app
     exitAction = new QAction(tr("E&xit"), this);
     exitAction->setShortcuts(QKeySequence::Quit);
@@ -267,6 +272,7 @@ void Diagram::createToolbars()
     editToolBar->addAction(deleteAction);
     editToolBar->addAction(toFrontAction);
     editToolBar->addAction(sendBackAction);
+    editToolBar->addAction(generateSqlAction);
 
 
     // combo box with the fonts
@@ -536,6 +542,16 @@ void Diagram::deleteItem()
 
 
 
+void Diagram::generateSql() {
+    emit generateSqlClicked();
+
+    // get the tables
+
+    // get the relationships
+}
+
+
+
 // brings selected item to the front of the scene
 void Diagram::bringToFront()
 {
@@ -733,7 +749,7 @@ void Diagram::itemSelected(QGraphicsItem *item)
     DiagramItem *selectedItem =
         qgraphicsitem_cast<DiagramItem *>(item);
 
-    // Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+    Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
 
     // change the text buttons if a text item is selected
     if (textItem) {
@@ -749,13 +765,9 @@ void Diagram::itemSelected(QGraphicsItem *item)
     if (selectedItem && selectedItem->myDiagramType == DiagramItem::Table) {
 
         // delete the existing layout
-        if (tablePropertiesWidget->layout()) {
-            QLayoutItem *child;
-            while ((child = tablePropertiesWidget->layout()->takeAt(0)) != nullptr) {
-                delete child;
-            }
-            delete tablePropertiesWidget->layout();
-            tablePropertiesWidget->hide();
+        if (sideWidget->layout()) {
+            deleteLayout(sideWidget->layout());
+            sideWidget->hide();
         }
 
         QVBoxLayout *verticalMainLayout = new QVBoxLayout;
@@ -771,8 +783,8 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
         QLineEdit *lineEdit = new QLineEdit;
 
-        if (selectedItem->textItem) {
-            lineEdit->setText(selectedItem->textItem->toPlainText());
+        if (selectedItem->tableName) {
+            lineEdit->setText(selectedItem->tableName->toPlainText());
         }
         lineEdit->setFixedWidth(100);
 
@@ -793,7 +805,7 @@ void Diagram::itemSelected(QGraphicsItem *item)
         // Connect the close button's clicked signal to a slot that hides the tablePropertiesWidget
         connect(closeButton, &QPushButton::clicked, [this, selectedItem]() {
             scene->clearSelection(); // Deselect all items in the scene
-            tablePropertiesWidget->hide(); // Hide the tablePropertiesWidget
+            sideWidget->hide(); // Hide the tablePropertiesWidget
         });
 
         QHBoxLayout *closeButtonLayout = new QHBoxLayout;
@@ -877,20 +889,51 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
         verticalMainLayout->addLayout(verticalColumnsLayout);
 
-        tablePropertiesWidget = new QWidget;
+        // add layout to the side widget
+        sideWidget = new QWidget;
         // tablePropertiesWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        tablePropertiesWidget->setLayout(verticalMainLayout);
-        tablePropertiesWidget->setVisible(true);
-        layout->addWidget(tablePropertiesWidget);
+        sideWidget->setLayout(verticalMainLayout);
+        sideWidget->setVisible(true);
+        layout->addWidget(sideWidget);
     } else {
-        tablePropertiesWidget->hide();
+        sideWidget->hide();
     }
 
 
 
-    // if (arrow) {
-    //     std::cout << "Arrow selected" << std::endl;
-    // }
+    if (arrow && arrow->startItem()->myDiagramType == DiagramItem::Table && arrow->endItem()->myDiagramType == DiagramItem::Table) {
+        std::cout << "Arrow selected" << std::endl;
+
+        // delete the existing layout
+        if (sideWidget->layout()) {
+            deleteLayout(sideWidget->layout());
+            sideWidget->hide();
+        }
+
+        QGridLayout *gridLayout = new QGridLayout;
+        gridLayout->setAlignment(Qt::AlignTop);
+
+        QLabel *fromLabel = new QLabel("From: ");
+        QComboBox* fromComboBox = new QComboBox();
+        fromComboBox->addItems(arrow->startItem()->getColumns());
+
+        QLabel *toLabel = new QLabel("To: ");
+        QComboBox* toComboBox = new QComboBox();
+        toComboBox->addItems(arrow->endItem()->getColumns());
+
+        gridLayout->addWidget(fromLabel, 0, 0);
+        gridLayout->addWidget(fromComboBox, 0, 1);
+        gridLayout->addWidget(toLabel, 1, 0);
+        gridLayout->addWidget(toComboBox, 1, 1);
+
+
+        // add layout to the side widget
+        sideWidget = new QWidget;
+        // tablePropertiesWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        sideWidget->setLayout(gridLayout);
+        sideWidget->setVisible(true);
+        layout->addWidget(sideWidget);
+    }
 }
 
 
