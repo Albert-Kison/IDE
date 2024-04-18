@@ -16,5 +16,6 @@
         <file>images/textpointer.png</file>
         <file>images/underline.png</file>
         <file>images/sql-server.png</file>
+        <file>images/table.png</file>
     </qresource>
 </RCC>

@@ -3,6 +3,7 @@
 
 #include <QGraphicsSceneMouseEvent>
 #include <QTextCursor>
+#include <iostream>
 
 
 
@@ -116,6 +117,8 @@ void DiagramScene::editorLostFocus(DiagramTextItem *item)
 // handles mouse press events
 void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 {
+    std::cout << "Scene clicked" << std::endl;
+
     // if it is not a left button, exit the function
     if (mouseEvent->button() != Qt::LeftButton)
         return;
@@ -124,6 +127,7 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     DiagramItem *item;
     switch (myMode) {
     case InsertItem:
+        std::cout << "In the insert item mode" << std::endl;
         // create a new DiagramItem and add it to the scene
         item = new DiagramItem(myItemType, myItemMenu);
         item->setBrush(myItemColor);
@@ -131,7 +135,9 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
                 this, &DiagramScene::itemSelected);
         addItem(item);
         item->setPos(mouseEvent->scenePos());
+        std::cout << "Emit the item inserted signal" << std::endl;
         emit itemInserted(item);
+        std::cout << "Signal is emitted" << std::endl;
         break;
 
     case InsertLine:

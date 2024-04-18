@@ -21,7 +21,6 @@ Diagram::Diagram()
 {
     // create the widgets, layouts, and the scene
     createActions();
-    createToolBox();
     createMenus();
 
     scene = new DiagramScene(itemMenu, this);
@@ -40,13 +39,18 @@ Diagram::Diagram()
 
     // create horizontal layout and add widgets to it
     layout = new QHBoxLayout;
-    layout->addWidget(toolBox);
+    // layout->addWidget(toolBox);
 
     view = new QGraphicsView(scene);
     view->viewport()->installEventFilter(this);
     layout->addWidget(view);
 
-    // tablePropertiesWidget = new QWidget;
+    // set the white background
+    scene->setBackgroundBrush(QPixmap(":/images/images/background4.png"));
+    scene->update();
+    view->update();
+
+    // used to display table info or relationship info
     sideWidget = new QWidget;
 
     mainWidget = new QWidget;
@@ -54,140 +58,6 @@ Diagram::Diagram()
 
     setCentralWidget(mainWidget);
     setUnifiedTitleAndToolBarOnMac(true);
-}
-
-
-
-void Diagram::createToolBox()
-{
-    // This button group contains the flowchart shapes
-    buttonGroup = new QButtonGroup(this);
-    buttonGroup->setExclusive(false);   // allow all buttons to be unchecked
-
-    // when one of the items is clicked
-    connect(buttonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
-            this, &Diagram::buttonGroupClicked);
-
-    // create the layout with the flowchart shapes
-    QGridLayout *layout = new QGridLayout;
-
-    // createCellWidget() creates a widget with a diagram item image
-    // and assigns the diagram type to it
-    layout->addWidget(createCellWidget(tr("Conditional"), DiagramItem::Conditional), 0, 0);
-    layout->addWidget(createCellWidget(tr("Process"), DiagramItem::Step),0, 1);
-    layout->addWidget(createCellWidget(tr("Input/Output"), DiagramItem::Io), 1, 0);
-    layout->addWidget(createCellWidget(tr("Table"), DiagramItem::Table), 1, 1);
-
-
-    // add text button
-    // almost the same code in createCellWidget()
-    QToolButton *textButton = new QToolButton;
-    textButton->setCheckable(true);
-    buttonGroup->addButton(textButton, InsertTextButton);
-    textButton->setIcon(QIcon(QPixmap(":/images/images/textpointer.png")));
-    textButton->setIconSize(QSize(50, 50));
-
-    QGridLayout *textLayout = new QGridLayout;
-    textLayout->addWidget(textButton, 0, 0, Qt::AlignHCenter);
-    textLayout->addWidget(new QLabel(tr("Text")), 1, 0, Qt::AlignCenter);
-
-    QWidget *textWidget = new QWidget;
-    textWidget->setLayout(textLayout);
-    layout->addWidget(textWidget, 2, 0);
-
-    layout->setRowStretch(3, 10);
-    layout->setColumnStretch(2, 10);
-
-    // the widget with the flowchart shapes buttons and the text button
-    // will be added to the tool box later
-    QWidget *itemWidget = new QWidget;
-    itemWidget->setLayout(layout);
-
-
-    // This button group contains the backgrounds for the graphics view
-    backgroundButtonGroup = new QButtonGroup(this);
-    // when one of the backgrounds is clicked
-    connect(backgroundButtonGroup, QOverload<QAbstractButton *>::of(&QButtonGroup::buttonClicked),
-            this, &Diagram::backgroundButtonGroupClicked);
-
-    // create the layout with the backgrounds
-    QGridLayout *backgroundLayout = new QGridLayout;
-
-    // createBackgroundCellWidget() creates a widget with a background image
-    backgroundLayout->addWidget(createBackgroundCellWidget(tr("Blue Grid"),
-                                                           ":/images/images/background1.png"), 0, 0);
-    backgroundLayout->addWidget(createBackgroundCellWidget(tr("White Grid"),
-                                                           ":/images/images/background2.png"), 0, 1);
-    backgroundLayout->addWidget(createBackgroundCellWidget(tr("Gray Grid"),
-                                                           ":/images/images/background3.png"), 1, 0);
-    backgroundLayout->addWidget(createBackgroundCellWidget(tr("No Grid"),
-                                                           ":/images/images/background4.png"), 1, 1);
-
-    backgroundLayout->setRowStretch(2, 10);
-    backgroundLayout->setColumnStretch(2, 10);
-
-    // the widget with the backgrounds buttons
-    // will be added to the tool box later
-    QWidget *backgroundWidget = new QWidget;
-    backgroundWidget->setLayout(backgroundLayout);
-
-
-    // create the tool box with the flowchart shapes and the backgrounds buttons
-    toolBox = new QToolBox;
-    toolBox->setSizePolicy(QSizePolicy(QSizePolicy::Maximum, QSizePolicy::Ignored));
-    toolBox->setMinimumWidth(itemWidget->sizeHint().width());
-    toolBox->addItem(itemWidget, tr("Basic Flowchart Shapes"));
-    toolBox->addItem(backgroundWidget, tr("Backgrounds"));
-}
-
-
-
-// creates a widget with a diagram item image and assigns the diagram type to it
-QWidget *Diagram::createCellWidget(const QString &text, DiagramItem::DiagramType type)
-{
-
-    // get the icon of the item
-    DiagramItem item(type, itemMenu);
-    QIcon icon(item.image());
-
-    // set the image and add the button to the button group with the flowchart shapes
-    QToolButton *button = new QToolButton;
-    button->setIcon(icon);
-    button->setIconSize(QSize(50, 50));
-    button->setCheckable(true);
-    buttonGroup->addButton(button, int(type));
-
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(button, 0, 0, Qt::AlignHCenter);
-    layout->addWidget(new QLabel(text), 1, 0, Qt::AlignCenter);
-
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
-
-    return widget;
-}
-
-
-
-// creates a widget with a background image
-QWidget *Diagram::createBackgroundCellWidget(const QString &text, const QString &image)
-{
-    // set the image and add the button to the backgrounds button group
-    QToolButton *button = new QToolButton;
-    button->setText(text);
-    button->setIcon(QIcon(image));
-    button->setIconSize(QSize(50, 50));
-    button->setCheckable(true);
-    backgroundButtonGroup->addButton(button);
-
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(button, 0, 0, Qt::AlignHCenter);
-    layout->addWidget(new QLabel(text), 1, 0, Qt::AlignCenter);
-
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
-
-    return widget;
 }
 
 
@@ -211,6 +81,21 @@ void Diagram::createMenus()
 
 void Diagram::createActions()
 {
+    // create a table
+    createTableAction = new QAction(QIcon(":/images/images/table.png"), tr("&Create table"), this);
+    createTableAction->setStatusTip(tr("Create an SQL table"));
+    connect(createTableAction, &QAction::triggered, this, &Diagram::createTableButtonClicked);
+
+    // create text
+    createTextAction = new QAction(QIcon(":/images/images/textpointer.png"), tr("&Create text"), this);
+    createTextAction->setStatusTip(tr("Create text"));
+    connect(createTextAction, &QAction::triggered, this, &Diagram::createTextButtonClicked);
+
+    // generate SQL code
+    generateSqlAction = new QAction(QIcon(":/images/images/sql-server.png"), tr("&Generate SQL"), this);
+    generateSqlAction->setStatusTip(tr("Generate SQL code"));
+    connect(generateSqlAction, &QAction::triggered, this, &Diagram::generateSql);
+
     // bring item to front
     toFrontAction = new QAction(QIcon(":/images/images/bringtofront.png"),
                                 tr("Bring to &Front"), this);
@@ -228,11 +113,7 @@ void Diagram::createActions()
     deleteAction = new QAction(QIcon(":/images/images/delete.png"), tr("&Delete"), this);
     deleteAction->setShortcut(tr("Delete"));
     deleteAction->setStatusTip(tr("Delete item from diagram"));
-    connect(deleteAction, &QAction::triggered, this, &Diagram::deleteItem);
-
-    generateSqlAction = new QAction(QIcon(":/images/images/sql-server.png"), tr("&Generate SQL"), this);
-    generateSqlAction->setStatusTip(tr("Generate SQL code"));
-    connect(generateSqlAction, &QAction::triggered, this, &Diagram::generateSql);
+    connect(deleteAction, &QAction::triggered, this, &Diagram::deleteItem);    
 
     // quit the app
     exitAction = new QAction(tr("E&xit"), this);
@@ -265,13 +146,21 @@ void Diagram::createActions()
     // connect(aboutAction, &QAction::triggered, this, &Diagram::about);
 }
 
+
+
 void Diagram::createToolbars()
 {
+    // create table, text, and generate SQL
+    createGenerateToolBar = addToolBar(tr("Table, Text and SQL"));
+    createGenerateToolBar->addAction(createTableAction);
+    createGenerateToolBar->addAction(createTextAction);
+    createGenerateToolBar->addAction(generateSqlAction);
+
+    // bring item to front, back, and delete it
     editToolBar = addToolBar(tr("Edit"));
     editToolBar->addAction(deleteAction);
     editToolBar->addAction(toFrontAction);
     editToolBar->addAction(sendBackAction);
-    editToolBar->addAction(generateSqlAction);
 
 
     // combo box with the fonts
@@ -541,6 +430,9 @@ void Diagram::deleteItem()
 
 
 
+// generate the corresponding SQL code
+// the function gets the tables and the relationships drawn on the diagram
+// and emits the signal passing the data
 void Diagram::generateSql() {
     QList<Table> tables;
     QList<Relationship> relationships;
@@ -567,9 +459,23 @@ void Diagram::generateSql() {
         }
     }
 
-    // get the relationships
 
     emit generateSqlClicked(tables);
+}
+
+
+
+// set the insert table mode
+void Diagram::createTableButtonClicked() {
+    scene->setItemType(DiagramItem::Table);
+    scene->setMode(DiagramScene::InsertItem);
+}
+
+
+
+// set the insert text mode
+void Diagram::createTextButtonClicked() {
+    scene->setMode(DiagramScene::InsertText);
 }
 
 
@@ -621,7 +527,7 @@ void Diagram::itemInserted(DiagramItem *item)
 {
     pointerTypeGroup->button(int(DiagramScene::MoveItem))->setChecked(true);
     scene->setMode(DiagramScene::Mode(pointerTypeGroup->checkedId()));
-    buttonGroup->button(int(item->diagramType()))->setChecked(false);
+    // buttonGroup->button(int(item->diagramType()))->setChecked(false);
 }
 
 
@@ -629,7 +535,8 @@ void Diagram::itemInserted(DiagramItem *item)
 // sets the mode of scene to the one that was before
 void Diagram::textInserted(QGraphicsTextItem *)
 {
-    buttonGroup->button(InsertTextButton)->setChecked(false);
+    // buttonGroup->button(InsertTextButton)->setChecked(false);
+    std::cout << "Text item inserted" << std::endl;
     scene->setMode(DiagramScene::Mode(pointerTypeGroup->checkedId()));
 }
 
@@ -673,31 +580,6 @@ void Diagram::sceneScaleChanged(const QString &scale)
     view->resetTransform();
     view->translate(oldMatrix.dx(), oldMatrix.dy());
     view->scale(newScale, newScale);
-}
-
-
-
-// handles view events:
-// scale the view when mouse is scrolled and ControlModifier is pressed
-bool Diagram::eventFilter(QObject *obj, QEvent *event)
-{
-    if (obj == view->viewport() && event->type() == QEvent::Wheel) {
-        QWheelEvent *wheelEvent = static_cast<QWheelEvent *>(event);
-        if (wheelEvent->modifiers() & Qt::ControlModifier) { // Check if Control key is pressed
-            QPointF scenePos = view->mapToScene(wheelEvent->position().toPoint());
-            if (view->sceneRect().contains(scenePos)) {
-                // Scale the view
-                qreal scaleFactor = 1.5;
-                QPoint delta = wheelEvent->angleDelta() / 8; // Get scroll distance
-                if (!delta.isNull()) {
-                    qreal factor = qPow(scaleFactor, delta.y() / 120.0);
-                    view->scale(factor, factor);
-                    return true;
-                }
-            }
-        }
-    }
-    return QMainWindow::eventFilter(obj, event);
 }
 
 

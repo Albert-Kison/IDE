@@ -46,13 +46,15 @@ private slots:
     void buttonGroupClicked(QAbstractButton *button);
     void pointerGroupClicked();
 
+    void createTableButtonClicked();
+    void createTextButtonClicked();
+    void generateSql();
+
     void deleteItem();
     void bringToFront();
     void sendToBack();
-    void generateSql();
 
     void itemInserted(DiagramItem *item);
-    // void itemClicked(DiagramItem *item);
     void textInserted(QGraphicsTextItem *item);
     void currentFontChanged(const QFont &font);
     void fontSizeChanged(const QString &size);
@@ -71,19 +73,11 @@ signals:
     void generateSqlClicked(QList<Table> &tables);
 
 private:
-    void createToolBox();
     void createActions();
     void createMenus();
     void createToolbars();
     void createColumnsWidgets(QVBoxLayout *verticalLayout, DiagramItem *item);
     void deleteLayout(QLayout *layout);
-
-    bool eventFilter(QObject *obj, QEvent *event) override;
-
-    QWidget *createBackgroundCellWidget(const QString &text,
-                                        const QString &image);
-    QWidget *createCellWidget(const QString &text,
-                              DiagramItem::DiagramType type);
 
     template<typename PointerToMemberFunction>
     QMenu *createColorMenu(const PointerToMemberFunction &slot, QColor defaultColor);
@@ -97,10 +91,13 @@ private:
     QWidget *sideWidget;
     QWidget *mainWidget;
 
+    QAction *createTableAction;
+    QAction *createTextAction;
+    QAction *generateSqlAction;
+
     QAction *exitAction;
     QAction *addAction;
     QAction *deleteAction;
-    QAction *generateSqlAction;
 
     QAction *toFrontAction;
     QAction *sendBackAction;
@@ -111,6 +108,7 @@ private:
     QMenu *aboutMenu;
 
     QToolBar *textToolBar;
+    QToolBar *createGenerateToolBar;
     QToolBar *editToolBar;
     QToolBar *colorToolBar;
     QToolBar *pointerToolbar;
