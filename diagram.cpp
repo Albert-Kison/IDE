@@ -387,7 +387,6 @@ void Diagram::buttonGroupClicked(QAbstractButton *button)
     if (id == InsertTextButton) {
         scene->setMode(DiagramScene::InsertText);
     } else {
-        scene->setItemType(DiagramItem::DiagramType(id));
         scene->setMode(DiagramScene::InsertItem);
     }
 }
@@ -441,22 +440,16 @@ void Diagram::generateSql() {
 
         // get the tables
         if (DiagramItem *currentItem = qgraphicsitem_cast<DiagramItem *>(item)) {
-            if (currentItem->myDiagramType == DiagramItem::Table) {
-                if (!currentItem->tableName->toPlainText().isEmpty() && currentItem->columns.size() > 0) {
-                    Table table(currentItem->tableName->toPlainText());
-                    for (int i = 0; i < currentItem->columns.size(); ++i) {
-                        table.addColumn(currentItem->columns[i].name, currentItem->columns[i].dataType, currentItem->columns[i].isPrimary);
-                    }
-                    tables << table;
-                }
+            if (!currentItem->table->name.isEmpty() && currentItem->table->columns.size() > 0) {
+                tables << *currentItem->table;
             }
         }
 
         // get the ralationships
-        Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
-        if (arrow && arrow->startItem()->myDiagramType == DiagramItem::Table && arrow->endItem()->myDiagramType == DiagramItem::Table) {
+        // Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+        // if (arrow && arrow->startItem()->myDiagramType == DiagramItem::Table && arrow->endItem()->myDiagramType == DiagramItem::Table) {
 
-        }
+        // }
     }
 
 
@@ -467,7 +460,6 @@ void Diagram::generateSql() {
 
 // set the insert table mode
 void Diagram::createTableButtonClicked() {
-    scene->setItemType(DiagramItem::Table);
     scene->setMode(DiagramScene::InsertItem);
 }
 
@@ -647,12 +639,15 @@ void Diagram::lineButtonTriggered()
 // changes the UI if another item is selected
 void Diagram::itemSelected(QGraphicsItem *item)
 {
+    // get the selected text item
     DiagramTextItem *textItem =
         qgraphicsitem_cast<DiagramTextItem *>(item);
 
+    // get the selected item (table)
     DiagramItem *selectedItem =
         qgraphicsitem_cast<DiagramItem *>(item);
 
+    // get the selected arrow (ralationship)
     Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
 
     // change the text buttons if a text item is selected
@@ -666,7 +661,7 @@ void Diagram::itemSelected(QGraphicsItem *item)
     }
 
     // show the table properties widget if a table item is selected
-    if (selectedItem && selectedItem->myDiagramType == DiagramItem::Table) {
+    if (selectedItem) {
 
         // delete the existing layout
         if (sideWidget->layout()) {
@@ -674,29 +669,23 @@ void Diagram::itemSelected(QGraphicsItem *item)
             sideWidget->hide();
         }
 
+        // the main layout of the side widget
         QVBoxLayout *verticalMainLayout = new QVBoxLayout;
         verticalMainLayout->setAlignment(Qt::AlignTop);
-        // selectedItem->updateText("New text");
-        // std::cout << selectedItem->textItem->toPlainText() << std::endl;
 
+        // Table name, add column button, and close the side widget button
         QVBoxLayout *verticalTableInfoLayout = new QVBoxLayout;
         verticalTableInfoLayout->setAlignment(Qt::AlignTop);
 
         QLabel *tableNameLabel = new QLabel("Table name:");
-        // gridLayout->addWidget(tableNameLabel, 0, 0);
 
         QLineEdit *lineEdit = new QLineEdit;
-
-        if (selectedItem->tableName) {
-            lineEdit->setText(selectedItem->tableName->toPlainText());
-        }
+        lineEdit->setText(selectedItem->table->name);
         lineEdit->setFixedWidth(100);
-
-        // disconnect(lineEdit, &QLineEdit::textChanged, nullptr, nullptr);
-        // disconnect(selectedItem->textItem->document(), &QTextDocument::contentsChanged, nullptr, nullptr);
 
         connect(lineEdit, &QLineEdit::textChanged, selectedItem, &DiagramItem::updateText);
 
+        // Table name: (Label)   New name (LineEdit)
         QHBoxLayout *tableNameLayout = new QHBoxLayout;
         tableNameLayout->addWidget(tableNameLabel);
         tableNameLayout->addWidget(lineEdit);
@@ -704,68 +693,64 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
         // Create the close button
         QPushButton *closeButton = new QPushButton("Close");
-        // gridLayout->addWidget(closeButton, 1, 0, 1, 2); // Add the button to the layout
 
-        // Connect the close button's clicked signal to a slot that hides the tablePropertiesWidget
+        // When the close button is clicked, hide the side widget
         connect(closeButton, &QPushButton::clicked, [this, selectedItem]() {
             scene->clearSelection(); // Deselect all items in the scene
             sideWidget->hide(); // Hide the tablePropertiesWidget
         });
 
+        // Close (Button)
         QHBoxLayout *closeButtonLayout = new QHBoxLayout;
         closeButtonLayout->addWidget(closeButton);
         verticalTableInfoLayout->addLayout(closeButtonLayout);
 
-        // Create the "Add Item" button
-        QPushButton *addItemButton = new QPushButton("Add Item");
-        // gridLayout->addWidget(addItemButton, 2, 0, 1, 2);
+        // Create the "Add Column" button
+        QPushButton *addItemButton = new QPushButton("Add Column");
 
+        // Add column (button)
         QHBoxLayout *addItemButtonLayout = new QHBoxLayout;
         addItemButtonLayout->addWidget(addItemButton);
         verticalTableInfoLayout->addLayout(addItemButtonLayout);
         verticalMainLayout->addLayout(verticalTableInfoLayout);
 
+        // Column name 1, column data type 1, primary button 1
+        // Column name 2, column data type 2, primary button 2
+        // ...
         QVBoxLayout *verticalColumnsLayout = new QVBoxLayout;
         verticalColumnsLayout->setAlignment(Qt::AlignTop);
         createColumnsWidgets(verticalColumnsLayout, selectedItem);
-        std::cout << "Out of the method" << std::endl;
-        // verticalLayout->addLayout(verticalColumnsLayout);
-        // Create a scroll area and set the vertical layout as its widget
+
+        // Scroll the columns
         QScrollArea *scrollArea = new QScrollArea;
         scrollArea->setWidgetResizable(true);
         QWidget *scrollAreaContent = new QWidget;
         scrollAreaContent->setLayout(verticalColumnsLayout);
-
-        // Set the size policy of the contained widget to fixed horizontally
         scrollAreaContent->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-
         scrollArea->setWidget(scrollAreaContent);
-        scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // Show vertical scrollbar
-        scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff); // Hide horizontal scrollbar
-
         verticalMainLayout->addWidget(scrollArea);
         std::cout << "Added to the vertical layout" << std::endl;
 
-        // Connect the add item button's clicked signal to a slot that adds the item
+        // When the add column button is clicked, draw the interface to add a column
         connect(addItemButton, &QPushButton::clicked, [this, verticalColumnsLayout, selectedItem]() {
-            // QLabel *itemNameLabel = new QLabel("Item name:");
+
+            // Type the column name
             QLineEdit *nameLineEdit = new QLineEdit;
             nameLineEdit->setPlaceholderText("Item name");
             nameLineEdit->setFixedWidth(100);
 
-            // QLabel *dataTypeLabel = new QLabel("Data type:");
+            // Choose the data types
             QComboBox *dataTypeComboBox = new QComboBox;
             // Add SQL data types to the combo box
             dataTypeComboBox->addItem("INT");
             dataTypeComboBox->addItem("VARCHAR");
             dataTypeComboBox->addItem("DATE");
-
             // Add more data types as needed
 
+            // Item name (line edit)   data type (combo box)
             QHBoxLayout *itemLayout = new QHBoxLayout;
             itemLayout->addWidget(nameLineEdit);
             itemLayout->addWidget(dataTypeComboBox);
-            std::cout << "This should not be null" << std::endl;
             verticalColumnsLayout->addLayout(itemLayout);
 
             // Create the "Add" button
@@ -774,17 +759,20 @@ void Diagram::itemSelected(QGraphicsItem *item)
             addButtonLayout->addWidget(addButton);
             verticalColumnsLayout->addLayout(addButtonLayout);
 
-            // Connect the add button's clicked signal to a slot that adds the item
+            // When the add button is clicked, add the column to the table
             connect(addButton, &QPushButton::clicked, [this, nameLineEdit, dataTypeComboBox, selectedItem, addButton, verticalColumnsLayout]() {
+
                 // Retrieve the entered item name and data type
                 QString itemName = nameLineEdit->text();
                 QString dataType = dataTypeComboBox->currentText();
-                // Do something with the item name and data type, such as adding the item to the table
-                // You can emit a signal here to handle the item addition in the scene
-                // Example: emit addItemSignal(itemName, dataType);
+
+                // check if there is a column name
                 if (!itemName.isEmpty()) {
-                    int index = selectedItem->addItem(itemName, dataType);
+                    // add the column to the table
+                    selectedItem->addItem(itemName, dataType);
+                    // delete the interface for adding a column
                     deleteLayout(verticalColumnsLayout);
+                    // update the column list
                     createColumnsWidgets(verticalColumnsLayout, selectedItem);
                 }
             });
@@ -800,12 +788,14 @@ void Diagram::itemSelected(QGraphicsItem *item)
         sideWidget->setVisible(true);
         layout->addWidget(sideWidget);
     } else {
+        // if another item is selected, hide the widget or show a new one
         sideWidget->hide();
     }
 
 
 
-    if (arrow && arrow->startItem()->myDiagramType == DiagramItem::Table && arrow->endItem()->myDiagramType == DiagramItem::Table) {
+    // if the selected item is an arrow (relationship)
+    if (arrow) {
         std::cout << "Arrow selected" << std::endl;
 
         // delete the existing layout
@@ -814,6 +804,9 @@ void Diagram::itemSelected(QGraphicsItem *item)
             sideWidget->hide();
         }
 
+        // main widget layout
+        // From: (label)   Combo box with data types (ComboBox)
+        // To: (label)     Combo box with data types (ComboBox)
         QGridLayout *gridLayout = new QGridLayout;
         gridLayout->setAlignment(Qt::AlignTop);
 
@@ -833,7 +826,6 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
         // add layout to the side widget
         sideWidget = new QWidget;
-        // tablePropertiesWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sideWidget->setLayout(gridLayout);
         sideWidget->setVisible(true);
         layout->addWidget(sideWidget);
@@ -842,39 +834,52 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
 
 
+// create the layout with column names and data types
 void Diagram::createColumnsWidgets(QVBoxLayout *verticalColumnsLayout, DiagramItem *item) {
-    // Re-draw the widgets
-    for (int i = 0; i < item->columns.size(); ++i) {
+
+    // loop through the columns in the table
+    for (int i = 0; i < item->table->columns.size(); ++i) {
         QVBoxLayout *itemLayout = new QVBoxLayout;
 
+        // line edit with the column name
         QLineEdit *nameLineEdit = new QLineEdit;
         nameLineEdit->setPlaceholderText("Item name");
         nameLineEdit->setFixedWidth(100);
-        nameLineEdit->setText(item->columns[i].name);
+        // set the current column name
+        nameLineEdit->setText(item->table->columns[i].name);
+        // when the text is editted, re-draw the text and update it in the table
         connect(nameLineEdit, &QLineEdit::textChanged, this, [this, item, i](const QString &text) {
-            item->updateItem(i, text, item->columns[i].dataType);
+            Column newColumn(text, item->table->columns[i].type, item->table->columns[i].isPrimary);
+            item->updateColumn(i, newColumn);
         });
 
+        // combo box with data types
         QComboBox *dataTypeComboBox = new QComboBox;
         dataTypeComboBox->addItem("INT");
         dataTypeComboBox->addItem("VARCHAR");
         dataTypeComboBox->addItem("DATE");
         // Add more data types as needed
-        dataTypeComboBox->setCurrentText(item->columns[i].dataType);
+
+        // set the current column data type
+        dataTypeComboBox->setCurrentText(item->table->columns[i].type);
+        // when the data type is changed, re-draw the columns on the diagram and update it in the table
         connect(dataTypeComboBox, &QComboBox::currentTextChanged, [=](const QString &text) {
             QString newDataType = text;
-            item->updateItem(i, item->columns[i].name, newDataType);
+            Column newColumn(item->table->columns[i].name, newDataType, item->table->columns[i].isPrimary);
+            item->updateColumn(i, newColumn);
         });
 
+        // sets a primary column
         QRadioButton *primaryKeyRadioButton = new QRadioButton("Primary Key");
 
-        // Connect radio button signal
+        // When clicked, set the column to primary
         connect(primaryKeyRadioButton, &QRadioButton::clicked, [=]() {
-            item->updatePrimary(i);
+            Column newColumn(item->table->columns[i].name, item->table->columns[i].type, true);
+            item->updateColumn(i, newColumn);
         });
 
         // Set the current primary key radio button based on the column's primary key status
-        primaryKeyRadioButton->setChecked(item->columns[i].isPrimary);
+        primaryKeyRadioButton->setChecked(item->table->columns[i].isPrimary);
 
         QHBoxLayout *itemInfoLayout = new QHBoxLayout;
         itemInfoLayout->addWidget(nameLineEdit);

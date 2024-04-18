@@ -20,68 +20,55 @@
 
 
 // create an item according to its type
-DiagramItem::DiagramItem(DiagramType diagramType, QMenu *contextMenu,
+DiagramItem::DiagramItem(QMenu *contextMenu,
                          QGraphicsItem *parent)
-    : QGraphicsPolygonItem(parent), myDiagramType(diagramType)
+    : QGraphicsPolygonItem(parent)
     , myContextMenu(contextMenu)
 {
-    tableName = nullptr;
 
     QPainterPath path;
-    switch (myDiagramType) {
-    case StartEnd:
-        path.moveTo(200, 50);
-        path.arcTo(150, 0, 50, 50, 0, 90);
-        path.arcTo(50, 0, 50, 50, 90, 90);
-        path.arcTo(50, 50, 50, 50, 180, 90);
-        path.arcTo(150, 50, 50, 50, 270, 90);
-        path.lineTo(200, 25);
-        myPolygon = path.toFillPolygon();
-        break;
-    case Conditional:
-        myPolygon << QPointF(-100, 0) << QPointF(0, 100)
-                  << QPointF(100, 0) << QPointF(0, -100)
-                  << QPointF(-100, 0);
-        break;
-    case Step:
-        myPolygon << QPointF(-100, -100) << QPointF(100, -100)
-                  << QPointF(100, 100) << QPointF(-100, 100)
-                  << QPointF(-100, -100);
-        break;
-    case Table:
         // Create polygons for the table name and the item list
-        tableNamePolygon << QPointF(-100, -75) << QPointF(100, -75)
-                         << QPointF(100, -25) << QPointF(-100, -25)
-                         << QPointF(-100, -75);
+    tableNamePolygon << QPointF(-100, -75) << QPointF(100, -75)
+                     << QPointF(100, -25) << QPointF(-100, -25)
+                     << QPointF(-100, -75);
 
-        itemListPolygon << QPointF(-100, -25) << QPointF(100, -25)
-                        << QPointF(100, 75) << QPointF(-100, 75)
-                        << QPointF(-100, -25);
+    itemListPolygon << QPointF(-100, -25) << QPointF(100, -25)
+                    << QPointF(100, 75) << QPointF(-100, 75)
+                    << QPointF(-100, -25);
 
-        myPolygon = tableNamePolygon + itemListPolygon;
-        break;
-    default:
-        myPolygon << QPointF(-120, -80) << QPointF(-70, 80)
-                  << QPointF(120, 80) << QPointF(70, -80)
-                  << QPointF(-120, -80);
-        break;
-    }
+    myPolygon = tableNamePolygon + itemListPolygon;
+
     setPolygon(myPolygon);
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 
     // name the table
-    if (myDiagramType == DiagramItem::Table) {
-        namePolygon(tableNamePolygon);
-    }
+    table = new Table("New item");
+    drawName(tableNamePolygon);
 }
 
 
 
-void DiagramItem::namePolygon(const QPolygonF& polygon) {
-    tableName = new QGraphicsTextItem();
-    tableName->setPlainText("New name");
+void DiagramItem::drawName(const QPolygonF& polygon) {
+
+    // Delete existing text items within the polygon
+    QList<QGraphicsItem*> childItemsList = childItems();
+    for (QGraphicsItem* item : childItemsList) {
+        // Check if the item is a QGraphicsTextItem
+        QGraphicsTextItem* textItem = dynamic_cast<QGraphicsTextItem*>(item);
+        if (textItem) {
+            // Check if the position of the text item falls within the specified polygon
+            QPointF itemPos = textItem->pos();
+            if (polygon.containsPoint(itemPos, Qt::OddEvenFill)) {
+                // If it does, delete the text item
+                delete textItem;
+            }
+        }
+    }
+
+    QGraphicsTextItem *tableName = new QGraphicsTextItem();
+    tableName->setPlainText(table->name);
     // textItem->setFlags(ItemIsSelectable | ItemIsFocusable);
 
     // Set the width of the bounding rectangle
@@ -142,8 +129,8 @@ void DiagramItem::addArrow(Arrow *arrow)
 
 QStringList DiagramItem::getColumns() const {
     QStringList columnNames;
-    for (const auto& column : columns) {
-        columnNames.append(column.name + " (" + column.dataType + ")");
+    for (const auto& column : table->columns) {
+        columnNames.append(column.name + " (" + column.type + ")");
     }
     return columnNames;
 }
@@ -151,23 +138,24 @@ QStringList DiagramItem::getColumns() const {
 
 
 void DiagramItem::updateText(const QString& newText) {
-    tableName->setPlainText(newText);
+    table->name = newText;
+    drawName(tableNamePolygon);
 }
 
 
 
-void DiagramItem::updateTextPosition() {
-    // Ensure that the text item exists
-    if (!tableName)
-        return;
+// void DiagramItem::updateTextPosition() {
+//     // Ensure that the text item exists
+//     if (!tableName)
+//         return;
 
-    // std::cout << "iodhfier" << std::endl;
+//     // std::cout << "iodhfier" << std::endl;
 
-    // Calculate the new position based on the center point of the item's polygon
-    QPointF center = polygon().boundingRect().center();
-    tableName->setPos(center.x() - tableName->boundingRect().width() / 2,
-                     center.y() - tableName->boundingRect().height() / 2);
-}
+//     // Calculate the new position based on the center point of the item's polygon
+//     QPointF center = polygon().boundingRect().center();
+//     tableName->setPos(center.x() - tableName->boundingRect().width() / 2,
+//                      center.y() - tableName->boundingRect().height() / 2);
+// }
 
 
 
@@ -215,12 +203,17 @@ QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &valu
 void DiagramItem::drawColumns() {
 
     // Clear existing text items
-    QList<QGraphicsItem*> childItems = this->childItems();
-    for (int i = 1; i < childItems.size(); i++) {
-        QGraphicsTextItem *textItem = qgraphicsitem_cast<QGraphicsTextItem*>(childItems[i]);
-        // Check if the item is a QGraphicsTextItem and its index matches the updated item
+    QList<QGraphicsItem*> childItemsList = childItems();
+    for (QGraphicsItem* item : childItemsList) {
+        // Check if the item is a QGraphicsTextItem
+        QGraphicsTextItem* textItem = dynamic_cast<QGraphicsTextItem*>(item);
         if (textItem) {
-            delete textItem;
+            // Check if the position of the text item falls within the specified polygon
+            QPointF itemPos = textItem->pos();
+            if (itemListPolygon.containsPoint(itemPos, Qt::OddEvenFill)) {
+                // If it does, delete the text item
+                delete textItem;
+            }
         }
     }
 
@@ -229,7 +222,7 @@ void DiagramItem::drawColumns() {
 
     // Update the size of the item list polygon
     itemListPolygon << QPointF(-100, -25) << QPointF(100, -25)
-                    << QPointF(100, -15 + 20 * columns.size()) << QPointF(-100, -15 + 20 * columns.size())
+                    << QPointF(100, -15 + 20 * table->columns.size()) << QPointF(-100, -15 + 20 * table->columns.size())
                     << QPointF(-100, -25);
 
     // Update tablePolygon by combining tableNamePolygon and itemListPolygon
@@ -239,8 +232,8 @@ void DiagramItem::drawColumns() {
     setPolygon(myPolygon);
 
     qreal y = itemListPolygon.boundingRect().y(); // Initial y-coordinate for the first item name
-    for (const Column &column : columns) {
-        QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name + " (" + column.dataType + ")" + (column.isPrimary ? " Primary" : ""));
+    for (const Column &column : table->columns) {
+        QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name + " (" + column.type + ")" + (column.isPrimary ? " Primary" : ""));
         textItem->setDefaultTextColor(Qt::red);
 
         // Set the position of the text item relative to the itemListPolygon
@@ -257,34 +250,33 @@ void DiagramItem::drawColumns() {
 
 
 
-int DiagramItem::addItem(QString& name, QString &type) {
+void DiagramItem::addItem(QString& name, QString &type) {
     // std::cout << "Add item: " << name << "(" << type << ")" << std::endl;
-    Column column;
-    column.isPrimary = columns.size() == 0 ? true : false;
-    column.name = name;
-    column.dataType = type;
-    columns.append(column);
+    Column column(name, type, table->columns.size() == 0 ? true : false);
+    table->columns << column;
 
     drawColumns();
-
-    return columns.size() - 1;
 }
 
 
 
-void DiagramItem::updateItem(int index, const QString &newText, QString &newDataType) {
-    columns[index].name = newText;
-    columns[index].dataType = newDataType;
+void DiagramItem::updateColumn(int index, Column& newColumn) {
+    // reset primary
+    for (int i = 0; i < table->columns.size(); i++) {
+        table->columns[i].isPrimary = false;
+    }
+
+    table->columns[index] = newColumn;
 
     drawColumns();
 }
 
 void DiagramItem::updatePrimary(int index) {
-    if (index >= 0 && index < columns.size()) {
-        for (int i = 0; i < columns.size(); ++i) {
-            columns[i].isPrimary = false;
+    if (index >= 0 && index < table->columns.size()) {
+        for (int i = 0; i < table->columns.size(); ++i) {
+            table->columns[i].isPrimary = false;
         }
-        columns[index].isPrimary = true;
+        table->columns[index].isPrimary = true;
     }
 
     drawColumns();
@@ -293,10 +285,10 @@ void DiagramItem::updatePrimary(int index) {
 
 
 void DiagramItem::removeColumn(int index) {
-    if (index >= 0 && index < columns.size()) {
-        columns.remove(index);
-        if (columns.size() > 0) {
-            columns[0].isPrimary = true;
+    if (index >= 0 && index < table->columns.size()) {
+        table->columns.remove(index);
+        if (table->columns.size() > 0) {
+            table->columns[0].isPrimary = true;
         }
     }
 

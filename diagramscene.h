@@ -40,7 +40,6 @@ public:
 
 public slots:
     void setMode(Mode mode);
-    void setItemType(DiagramItem::DiagramType type);
     void editorLostFocus(DiagramTextItem *item);
 
 signals:
@@ -56,7 +55,6 @@ protected:
 private:
     bool isItemChange(int type) const;
 
-    DiagramItem::DiagramType myItemType;
     QMenu *myItemMenu;
     Mode myMode;
     bool leftButtonDown;

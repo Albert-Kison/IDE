@@ -12,7 +12,6 @@ DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
 {
     myItemMenu = itemMenu;  // item actions
     myMode = MoveItem;  // default behavior
-    myItemType = DiagramItem::Step;
     line = nullptr;
     textItem = nullptr;
     myItemColor = Qt::white;
@@ -90,14 +89,6 @@ void DiagramScene::setMode(Mode mode)
 
 
 
-// set item type
-void DiagramScene::setItemType(DiagramItem::DiagramType type)
-{
-    myItemType = type;
-}
-
-
-
 // emitted by DiagramTextItem when it loses focus
 void DiagramScene::editorLostFocus(DiagramTextItem *item)
 {
@@ -129,7 +120,7 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     case InsertItem:
         std::cout << "In the insert item mode" << std::endl;
         // create a new DiagramItem and add it to the scene
-        item = new DiagramItem(myItemType, myItemMenu);
+        item = new DiagramItem(myItemMenu);
         item->setBrush(myItemColor);
         connect(item, &DiagramItem::selectedChange,
                 this, &DiagramScene::itemSelected);

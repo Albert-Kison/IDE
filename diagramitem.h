@@ -8,6 +8,7 @@
 #include <QGraphicsPixmapItem>
 #include <QList>
 #include <QGraphicsTextItem>
+#include "Table.h"
 
 QT_BEGIN_NAMESPACE
 class QPixmap;
@@ -25,43 +26,29 @@ class DiagramItem : public QObject, public QGraphicsPolygonItem
 
 public:
     // unique identifier of the class that is used by qgraphicsitem_cast(), which does dynamic casts of graphics items
-    enum { Type = UserType + 15 };
-    enum DiagramType { Step, Conditional, StartEnd, Io, Table };   // flowchart shapes
+    // enum { Type = UserType + 15 };
 
-    DiagramItem(DiagramType diagramType, QMenu *contextMenu, QGraphicsItem *parent = nullptr);
+    DiagramItem(QMenu *contextMenu, QGraphicsItem *parent = nullptr);
 
     void removeArrow(Arrow *arrow);
     void removeArrows();
-    DiagramType diagramType() const { return myDiagramType; }
     QPolygonF polygon() const { return myPolygon; }
     void addArrow(Arrow *arrow);
-    int addItem(QString& name, QString& type);
+    void addItem(QString& name, QString& type);
     void updateText(const QString& newText);
-    void updateItem(int index, const QString& newText, QString& newDataType);
+    void updateColumn(int index, Column& column);
     void updatePrimary(int index);
     void removeColumn(int index);
     void drawColumns();
-    void namePolygon(const QPolygonF& polygon);
+    void drawName(const QPolygonF& polygon);
     QStringList getColumns() const;
     QPixmap image() const;
     int type() const override { return Type; }
 
-    DiagramType myDiagramType;
-    QGraphicsTextItem *tableName;
+    Table *table;
 
-    // QStringList items;
-
-    struct Column
-    {
-        bool isPrimary = false;
-        QString name;
-        QString dataType;
-    };
-
-    QVector<Column> columns;
-
-public slots:
-    void updateTextPosition();    
+// public slots:
+//     void updateTextPosition();
 
 signals:
     void selectedChange(QGraphicsItem *item);
