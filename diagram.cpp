@@ -1,5 +1,4 @@
 #include "arrow.h"
-#include "diagramitem.h"
 #include "diagramscene.h"
 #include "diagramtextitem.h"
 #include "diagram.h"
@@ -543,11 +542,34 @@ void Diagram::deleteItem()
 
 
 void Diagram::generateSql() {
-    emit generateSqlClicked();
+    QList<Table> tables;
+    QList<Relationship> relationships;
 
-    // get the tables
+    foreach (QGraphicsItem* item, scene->items()) {
+
+        // get the tables
+        if (DiagramItem *currentItem = qgraphicsitem_cast<DiagramItem *>(item)) {
+            if (currentItem->myDiagramType == DiagramItem::Table) {
+                if (!currentItem->tableName->toPlainText().isEmpty() && currentItem->columns.size() > 0) {
+                    Table table(currentItem->tableName->toPlainText());
+                    for (int i = 0; i < currentItem->columns.size(); ++i) {
+                        table.addColumn(currentItem->columns[i].name, currentItem->columns[i].dataType, currentItem->columns[i].isPrimary);
+                    }
+                    tables << table;
+                }
+            }
+        }
+
+        // get the ralationships
+        Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+        if (arrow && arrow->startItem()->myDiagramType == DiagramItem::Table && arrow->endItem()->myDiagramType == DiagramItem::Table) {
+
+        }
+    }
 
     // get the relationships
+
+    emit generateSqlClicked(tables);
 }
 
 
@@ -827,7 +849,6 @@ void Diagram::itemSelected(QGraphicsItem *item)
         std::cout << "Out of the method" << std::endl;
         // verticalLayout->addLayout(verticalColumnsLayout);
         // Create a scroll area and set the vertical layout as its widget
-        // Create a scroll area and set the vertical layout as its widget
         QScrollArea *scrollArea = new QScrollArea;
         scrollArea->setWidgetResizable(true);
         QWidget *scrollAreaContent = new QWidget;
@@ -893,6 +914,7 @@ void Diagram::itemSelected(QGraphicsItem *item)
         sideWidget = new QWidget;
         // tablePropertiesWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sideWidget->setLayout(verticalMainLayout);
+        sideWidget->setFixedWidth(300);
         sideWidget->setVisible(true);
         layout->addWidget(sideWidget);
     } else {
@@ -941,7 +963,7 @@ void Diagram::itemSelected(QGraphicsItem *item)
 void Diagram::createColumnsWidgets(QVBoxLayout *verticalColumnsLayout, DiagramItem *item) {
     // Re-draw the widgets
     for (int i = 0; i < item->columns.size(); ++i) {
-        QHBoxLayout *itemLayout = new QHBoxLayout;
+        QVBoxLayout *itemLayout = new QVBoxLayout;
 
         QLineEdit *nameLineEdit = new QLineEdit;
         nameLineEdit->setPlaceholderText("Item name");
@@ -962,6 +984,22 @@ void Diagram::createColumnsWidgets(QVBoxLayout *verticalColumnsLayout, DiagramIt
             item->updateItem(i, item->columns[i].name, newDataType);
         });
 
+        QRadioButton *primaryKeyRadioButton = new QRadioButton("Primary Key");
+
+        // Connect radio button signal
+        connect(primaryKeyRadioButton, &QRadioButton::clicked, [=]() {
+            item->updatePrimary(i);
+        });
+
+        // Set the current primary key radio button based on the column's primary key status
+        primaryKeyRadioButton->setChecked(item->columns[i].isPrimary);
+
+        QHBoxLayout *itemInfoLayout = new QHBoxLayout;
+        itemInfoLayout->addWidget(nameLineEdit);
+        itemInfoLayout->addWidget(dataTypeComboBox);
+        itemInfoLayout->addWidget(primaryKeyRadioButton);
+        itemLayout->addLayout(itemInfoLayout);
+
         QPushButton *deleteButton = new QPushButton("Delete");
         QHBoxLayout *deleteButtonLayout = new QHBoxLayout;
         deleteButtonLayout->addWidget(deleteButton);
@@ -972,8 +1010,6 @@ void Diagram::createColumnsWidgets(QVBoxLayout *verticalColumnsLayout, DiagramIt
             createColumnsWidgets(verticalColumnsLayout, item);
         });
 
-        itemLayout->addWidget(nameLineEdit);
-        itemLayout->addWidget(dataTypeComboBox);
         itemLayout->addLayout(deleteButtonLayout);
         verticalColumnsLayout->addLayout(itemLayout);
     }

@@ -27,6 +27,9 @@ public:
     void setColor(const QColor &color) { myColor = color; }
     DiagramItem *startItem() const { return myStartItem; }
     DiagramItem *endItem() const { return myEndItem; }
+    QString startColumn() const {return myStartColumn; }
+    QString endColumn() const {return myEndColumn; }
+    // void setStartColumn(QString &column)
 
     void updatePosition();
 
@@ -42,6 +45,9 @@ private:
     // diagram items that the arrow connects
     DiagramItem *myStartItem;
     DiagramItem *myEndItem;
+
+    QString myStartColumn;
+    QString myEndColumn;
 
     QPolygonF arrowHead;
     QColor myColor = Qt::black;

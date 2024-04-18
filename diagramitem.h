@@ -38,6 +38,7 @@ public:
     int addItem(QString& name, QString& type);
     void updateText(const QString& newText);
     void updateItem(int index, const QString& newText, QString& newDataType);
+    void updatePrimary(int index);
     void removeColumn(int index);
     void drawColumns();
     void namePolygon(const QPolygonF& polygon);
@@ -52,6 +53,7 @@ public:
 
     struct Column
     {
+        bool isPrimary = false;
         QString name;
         QString dataType;
     };

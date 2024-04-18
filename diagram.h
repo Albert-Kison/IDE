@@ -9,6 +9,8 @@
 // and the graphics scene, view, and items
 
 #include "diagramitem.h"
+#include "Table.h"
+#include "Relationship.h"
 
 #include <QMainWindow>
 
@@ -66,7 +68,7 @@ private slots:
     // void about();
 
 signals:
-    void generateSqlClicked();
+    void generateSqlClicked(QList<Table> &tables);
 
 private:
     void createToolBox();

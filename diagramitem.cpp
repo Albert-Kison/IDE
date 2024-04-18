@@ -213,6 +213,7 @@ QVariant DiagramItem::itemChange(GraphicsItemChange change, const QVariant &valu
 
 
 void DiagramItem::drawColumns() {
+
     // Clear existing text items
     QList<QGraphicsItem*> childItems = this->childItems();
     for (int i = 1; i < childItems.size(); i++) {
@@ -239,7 +240,7 @@ void DiagramItem::drawColumns() {
 
     qreal y = itemListPolygon.boundingRect().y(); // Initial y-coordinate for the first item name
     for (const Column &column : columns) {
-        QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name + " (" + column.dataType + ")");
+        QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name + " (" + column.dataType + ")" + (column.isPrimary ? " Primary" : ""));
         textItem->setDefaultTextColor(Qt::red);
 
         // Set the position of the text item relative to the itemListPolygon
@@ -259,6 +260,7 @@ void DiagramItem::drawColumns() {
 int DiagramItem::addItem(QString& name, QString &type) {
     // std::cout << "Add item: " << name << "(" << type << ")" << std::endl;
     Column column;
+    column.isPrimary = columns.size() == 0 ? true : false;
     column.name = name;
     column.dataType = type;
     columns.append(column);
@@ -277,11 +279,25 @@ void DiagramItem::updateItem(int index, const QString &newText, QString &newData
     drawColumns();
 }
 
+void DiagramItem::updatePrimary(int index) {
+    if (index >= 0 && index < columns.size()) {
+        for (int i = 0; i < columns.size(); ++i) {
+            columns[i].isPrimary = false;
+        }
+        columns[index].isPrimary = true;
+    }
+
+    drawColumns();
+}
+
 
 
 void DiagramItem::removeColumn(int index) {
     if (index >= 0 && index < columns.size()) {
         columns.remove(index);
+        if (columns.size() > 0) {
+            columns[0].isPrimary = true;
+        }
     }
 
     drawColumns();
