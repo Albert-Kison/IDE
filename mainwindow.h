@@ -18,6 +18,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+signals:
+    void generateDiagramClicked(QString &code);
+
 private slots:
     void on_textEdit_textChanged();
     // void onFileSelected(const QString &filePath);

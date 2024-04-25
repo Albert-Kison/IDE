@@ -9,7 +9,7 @@
 
 // create arrow from start item to end item
 Arrow::Arrow(DiagramItem *startItem, DiagramItem *endItem, QGraphicsItem *parent)
-    : QGraphicsLineItem(parent), myStartItem(startItem), myEndItem(endItem)
+    : QGraphicsLineItem(parent), myStartItem(startItem), myEndItem(endItem), myStartColumn("", "", false), myEndColumn("", "", false)
 {
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setPen(QPen(myColor, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));

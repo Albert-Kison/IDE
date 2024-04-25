@@ -34,10 +34,9 @@ public:
     void removeArrows();
     QPolygonF polygon() const { return myPolygon; }
     void addArrow(Arrow *arrow);
-    void addItem(QString& name, QString& type);
-    void updateText(const QString& newText);
+    void addItem(QString& name, QString& type, bool isPrimary = false);
+    void updateName(const QString& newText);
     void updateColumn(int index, Column& column);
-    void updatePrimary(int index);
     void removeColumn(int index);
     void drawColumns();
     void drawName(const QPolygonF& polygon);

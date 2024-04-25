@@ -11,11 +11,14 @@ class SQLCodeGenerator: public QObject
 public:
     SQLCodeGenerator();
 
+    void parseSql(QString &code);
+
 signals:
     void codeGenerated(QString code);
+    void codeParsed(QList<Table> &tables, QList<Relationship> &relationships);
 
 public slots:
-    void onGenerateSqlCodeClicked(QList<Table> &tables);
+    void onGenerateSqlCodeClicked(QList<Table> &tables, QList<Relationship> &relationships);
 };
 
 #endif // SQLCODEGENERATOR_H

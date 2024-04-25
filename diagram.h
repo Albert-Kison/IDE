@@ -48,7 +48,7 @@ private slots:
 
     void createTableButtonClicked();
     void createTextButtonClicked();
-    void generateSql();
+    void generateSql();    
 
     void deleteItem();
     void bringToFront();
@@ -69,8 +69,11 @@ private slots:
     void itemSelected(QGraphicsItem *item);
     // void about();
 
+public slots:
+    void drawDiagram(QList<Table> &tables, QList<Relationship> &relationships);
+
 signals:
-    void generateSqlClicked(QList<Table> &tables);
+    void generateSqlClicked(QList<Table> &tables, QList<Relationship> &relationships);
 
 private:
     void createActions();

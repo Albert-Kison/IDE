@@ -4,16 +4,16 @@
 #include <QString>
 
 struct Relationship {
-    QString parentTable;
-    QString parentColumn;
-    QString childTable;
-    QString childColumn;
+    QString parentTableName;
+    QString parentColumnName;
+    QString childTableName;
+    QString childColumnName;
 
     // Constructor
-    Relationship(const QString& parentTable, const QString& parentColumn,
-                 const QString& childTable, const QString& childColumn)
-        : parentTable(parentTable), parentColumn(parentColumn),
-        childTable(childTable), childColumn(childColumn) {}
+    Relationship(const QString& parentTableName, const QString& parentColumnName,
+                 const QString& childTableName, const QString& childColumnName)
+        : parentTableName(parentTableName), parentColumnName(parentColumnName),
+        childTableName(childTableName), childColumnName(childColumnName) {}
 };
 
 #endif // RELATIONSHIP_H

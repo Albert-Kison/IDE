@@ -137,7 +137,7 @@ QStringList DiagramItem::getColumns() const {
 
 
 
-void DiagramItem::updateText(const QString& newText) {
+void DiagramItem::updateName(const QString& newText) {
     table->name = newText;
     drawName(tableNamePolygon);
 }
@@ -250,10 +250,18 @@ void DiagramItem::drawColumns() {
 
 
 
-void DiagramItem::addItem(QString& name, QString &type) {
+void DiagramItem::addItem(QString& name, QString &type, bool isPrimary) {
     // std::cout << "Add item: " << name << "(" << type << ")" << std::endl;
-    Column column(name, type, table->columns.size() == 0 ? true : false);
-    table->columns << column;
+    if (isPrimary) {
+        for (int i = 0; i < table->columns.size(); i++) {
+            table->columns[i].isPrimary = false;
+        }
+        Column column(name, type, true);
+        table->columns << column;
+    } else {
+        Column column(name, type, table->columns.size() == 0 ? true : false);
+        table->columns << column;
+    }
 
     drawColumns();
 }
@@ -267,17 +275,6 @@ void DiagramItem::updateColumn(int index, Column& newColumn) {
     }
 
     table->columns[index] = newColumn;
-
-    drawColumns();
-}
-
-void DiagramItem::updatePrimary(int index) {
-    if (index >= 0 && index < table->columns.size()) {
-        for (int i = 0; i < table->columns.size(); ++i) {
-            table->columns[i].isPrimary = false;
-        }
-        table->columns[index].isPrimary = true;
-    }
 
     drawColumns();
 }

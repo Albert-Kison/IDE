@@ -9,8 +9,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# add_subdirectory("/Users/albertkison/desktop/cpp_sql" build_cpp_sql)
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -37,6 +40,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         sqlcodegenerator.h sqlcodegenerator.cpp
         Table.h
         Relationship.h
+        ../Desktop/cpp_sql/sql-parser/src/parser/bison_parser.cpp ../Desktop/cpp_sql/sql-parser/src/parser/bison_parser.h ../Desktop/cpp_sql/sql-parser/src/parser/bison_parser.y ../Desktop/cpp_sql/sql-parser/src/parser/flex_lexer.cpp ../Desktop/cpp_sql/sql-parser/src/parser/flex_lexer.h ../Desktop/cpp_sql/sql-parser/src/parser/flex_lexer.l ../Desktop/cpp_sql/sql-parser/src/parser/keywordlist_generator.py ../Desktop/cpp_sql/sql-parser/src/parser/parser_typedef.h ../Desktop/cpp_sql/sql-parser/src/parser/sql_keywords.txt ../Desktop/cpp_sql/sql-parser/src/sql/AlterStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/ColumnType.h ../Desktop/cpp_sql/sql-parser/src/sql/CreateStatement.cpp ../Desktop/cpp_sql/sql-parser/src/sql/CreateStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/DeleteStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/DropStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/ExecuteStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/ExportStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/Expr.cpp ../Desktop/cpp_sql/sql-parser/src/sql/Expr.h ../Desktop/cpp_sql/sql-parser/src/sql/ImportStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/InsertStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/PrepareStatement.cpp ../Desktop/cpp_sql/sql-parser/src/sql/PrepareStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/SelectStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/ShowStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/SQLStatement.cpp ../Desktop/cpp_sql/sql-parser/src/sql/SQLStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/statements.cpp ../Desktop/cpp_sql/sql-parser/src/sql/statements.h ../Desktop/cpp_sql/sql-parser/src/sql/Table.h ../Desktop/cpp_sql/sql-parser/src/sql/TransactionStatement.h ../Desktop/cpp_sql/sql-parser/src/sql/UpdateStatement.h ../Desktop/cpp_sql/sql-parser/src/util/sqlhelper.cpp ../Desktop/cpp_sql/sql-parser/src/util/sqlhelper.h ../Desktop/cpp_sql/sql-parser/src/SQLParser.cpp ../Desktop/cpp_sql/sql-parser/src/SQLParser.h ../Desktop/cpp_sql/sql-parser/src/SQLParserResult.cpp ../Desktop/cpp_sql/sql-parser/src/SQLParserResult.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Test1 APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -56,7 +60,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(Test1 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Test1 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Sql)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

@@ -4,6 +4,7 @@
 // graphics item that connects two DiagramItems
 
 #include <QGraphicsLineItem>
+#include "Table.h"
 // #include <QObject>
 
 class DiagramItem;
@@ -27,8 +28,10 @@ public:
     void setColor(const QColor &color) { myColor = color; }
     DiagramItem *startItem() const { return myStartItem; }
     DiagramItem *endItem() const { return myEndItem; }
-    QString startColumn() const {return myStartColumn; }
-    QString endColumn() const {return myEndColumn; }
+    Column startColumn() const {return myStartColumn; }
+    Column endColumn() const {return myEndColumn; }
+    void setStartColumn(Column& column) { myStartColumn = column; }
+    void setEndColumn(Column& column) { myEndColumn = column; }
     // void setStartColumn(QString &column)
 
     void updatePosition();
@@ -46,8 +49,8 @@ private:
     DiagramItem *myStartItem;
     DiagramItem *myEndItem;
 
-    QString myStartColumn;
-    QString myEndColumn;
+    Column myStartColumn;
+    Column myEndColumn;
 
     QPolygonF arrowHead;
     QColor myColor = Qt::black;
