@@ -37,6 +37,7 @@ public:
     void setTextColor(const QColor &color);
     void setItemColor(const QColor &color);
     void setFont(const QFont &font);
+    DiagramItem* drawTable();
 
 public slots:
     void setMode(Mode mode);

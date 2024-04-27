@@ -478,62 +478,67 @@ void Diagram::createTextButtonClicked() {
 
 
 void Diagram::drawDiagram(QList<Table> &tables, QList<Relationship> &relationships) {
-    scene->clear();
 
-    // draw tables
+    // Clear the scene before drawing
+    scene->clear();    
+
+    // middle of the view
     qreal x = 5000 / 2;
     qreal y = 5000 / 2;
-    for (int i = 0; i < tables.size(); ++i) {
-        DiagramItem *item = new DiagramItem(itemMenu);
-        item->setBrush(Qt::white);
-        connect(item, &DiagramItem::selectedChange,
-                scene, &DiagramScene::itemSelected);
-        scene->addItem(item);
 
+    // draw tables
+    for (int i = 0; i < tables.size(); ++i) {
+        DiagramItem *item = scene->drawTable();
+
+        // change the coordinates so that the items do not overlap
         if (i % 2 == 0) {
             x += 250;
         } else {
             y += 250;
         }
+
         item->setPos(QPointF(x, y));
-        item->updateName(tables[i].name);
+        item->updateName(tables[i].name);   // assign the table's name
 
         view->centerOn(item);
         itemInserted(item);
 
-        // add columns
+        // add columns to the table
         for (int j = 0; j < tables[i].columns.size(); ++j) {
             item->addItem(tables[i].columns[j].name, tables[i].columns[j].type, tables[i].columns[j].isPrimary);
-            // item->updateColumn(j, tables[i].columns[j]);
         }
 
-        x = 5000 / 2;
+        x = 5000 / 2;   // reset the x coordinate
     }
 
     // draw relationships
     for (int i = 0; i < relationships.size(); ++i) {
-        DiagramItem *startItem;
-        DiagramItem *endItem;
+        DiagramItem *startTable;
+        DiagramItem *endTable;
         Column *startColumn;
         Column *endColumn;
 
-        // get the start and end items
+        // get the start and end tables and columns
         foreach (QGraphicsItem* item, scene->items()) {
             if (DiagramItem *currentItem = qgraphicsitem_cast<DiagramItem *>(item)) {
+                // get the parent table
                 if (currentItem->table->name == relationships[i].parentTableName) {
-                    startItem = currentItem;
+                    startTable = currentItem;
 
-                    for (Column& col : startItem->table->columns) {
+                    // get the parent column
+                    for (Column& col : startTable->table->columns) {
                         if (col.name == relationships[i].parentColumnName) {
                             startColumn = &col;
                         }
                     }
                 }
 
+                // get the child table
                 if (currentItem->table->name == relationships[i].childTableName) {
-                    endItem = currentItem;
+                    endTable = currentItem;
 
-                    for (Column& col : endItem->table->columns) {
+                    // get the child column
+                    for (Column& col : endTable->table->columns) {
                         if (col.name == relationships[i].childColumnName) {
                             endColumn = &col;
                         }
@@ -542,15 +547,15 @@ void Diagram::drawDiagram(QList<Table> &tables, QList<Relationship> &relationshi
             }
         }
 
-        // create the arrow
-        Arrow *arrow = new Arrow(startItem, endItem);
+        // draw the relationships
+        Arrow *arrow = new Arrow(startTable, endTable);
         arrow->setStartColumn(*startColumn);
         arrow->setEndColumn(*endColumn);
         arrow->setColor(Qt::black);
 
         // add arrow to each item and to the scene
-        startItem->addArrow(arrow);
-        endItem->addArrow(arrow);
+        startTable->addArrow(arrow);
+        endTable->addArrow(arrow);
         arrow->setZValue(-1000.0);
         connect(arrow, &Arrow::selectedChange, scene, &DiagramScene::itemSelected);
         scene->clearSelection();

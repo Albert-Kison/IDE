@@ -5,6 +5,8 @@
 #include <QSqlField>
 #include <QSqlIndex>
 #include <QSqlQuery>
+#include <QSqlError>
+
 
 // #include "../Desktop/cpp_sql/sql-parser/src/SQLParser.h"
 // #include "../Desktop/cpp_sql/sql-parser/src/util/sqlhelper.h"
@@ -59,7 +61,7 @@ void SQLCodeGenerator::parseSql(QString &code) {
     std::cout << code << std::endl;
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(":memory:"); // Use in-memory database for this example
+    db.setDatabaseName(":memory:"); // Use in-memory database
     if (!db.open()) {
         std::cout << "Error opening database" << std::endl;
         return;
@@ -74,9 +76,15 @@ void SQLCodeGenerator::parseSql(QString &code) {
 
     // Execute SQL statements
     for (const QString& statement : statements) {
+
+        // Skip empty lines
+        if (statement.trimmed().isEmpty()) {
+            continue;
+        }
+
         // Execute each statement separately
         if (!query.exec(statement)) {
-            std::cout << "Error executing SQL statement:" << std::endl;
+            std::cout << "Error executing SQL statement: " << query.lastError().text() << std::endl;
             db.close();
             return;
         }
@@ -125,6 +133,7 @@ void SQLCodeGenerator::parseSql(QString &code) {
                     QString columnName = query.value(1).toString();
                     std::cout << "    Primary Key:" << columnName << std::endl;
 
+                    // update primary key in the table
                     for (int i = 0; i < table.columns.size(); ++i) {
                         if (table.columns[i].name == columnName) {
                             table.columns[i].isPrimary = true;

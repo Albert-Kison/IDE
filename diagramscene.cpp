@@ -120,11 +120,7 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
     case InsertItem:
         std::cout << "In the insert item mode" << std::endl;
         // create a new DiagramItem and add it to the scene
-        item = new DiagramItem(myItemMenu);
-        item->setBrush(myItemColor);
-        connect(item, &DiagramItem::selectedChange,
-                this, &DiagramScene::itemSelected);
-        addItem(item);
+        item = drawTable();
         item->setPos(mouseEvent->scenePos());
         std::cout << "Emit the item inserted signal" << std::endl;
         emit itemInserted(item);
@@ -158,6 +154,18 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         ;
     }
     QGraphicsScene::mousePressEvent(mouseEvent);
+}
+
+
+
+DiagramItem* DiagramScene::drawTable() {
+    DiagramItem* item = new DiagramItem(myItemMenu);
+    item->setBrush(myItemColor);
+    connect(item, &DiagramItem::selectedChange,
+            this, &DiagramScene::itemSelected);
+    addItem(item);
+
+    return item;
 }
 
 
