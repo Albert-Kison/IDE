@@ -9,6 +9,13 @@
 
 class DiagramItem;
 
+struct ColumnRelationship {
+    Column startColumn;
+    Column endColumn;
+
+    ColumnRelationship(Column& startColumn, Column& endColumn) : startColumn(startColumn), endColumn(endColumn) {}
+};
+
 class Arrow : public QObject, public QGraphicsLineItem
 {
     Q_OBJECT
@@ -28,13 +35,15 @@ public:
     void setColor(const QColor &color) { myColor = color; }
     DiagramItem *startItem() const { return myStartItem; }
     DiagramItem *endItem() const { return myEndItem; }
-    Column startColumn() const {return myStartColumn; }
-    Column endColumn() const {return myEndColumn; }
-    void setStartColumn(Column& column) { myStartColumn = column; }
-    void setEndColumn(Column& column) { myEndColumn = column; }
+    // Column startColumn() const {return myStartColumn; }
+    // Column endColumn() const {return myEndColumn; }
+    // void setStartColumn(Column& column) { myStartColumn = column; }
+    // void setEndColumn(Column& column) { myEndColumn = column; }
     // void setStartColumn(QString &column)
 
     void updatePosition();
+
+    QList<ColumnRelationship> columnRelationships;
 
 signals:
     void selectedChange(QGraphicsItem *item);
@@ -49,8 +58,8 @@ private:
     DiagramItem *myStartItem;
     DiagramItem *myEndItem;
 
-    Column myStartColumn;
-    Column myEndColumn;
+    // Column myStartColumn;
+    // Column myEndColumn;
 
     QPolygonF arrowHead;
     QColor myColor = Qt::black;

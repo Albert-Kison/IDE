@@ -152,8 +152,8 @@ void SQLCodeGenerator::parseSql(QString &code) {
                 std::cout << "    Foreign Key:" << relationship.parentColumnName
                           << ", Referenced Column:" << relationship.childColumnName
                           << ", Referenced Table:" << relationship.parentTableName << std::endl;
-            }
-            diagramRelationships << relationship;
+                diagramRelationships << relationship;
+            }            
         }
     }
 

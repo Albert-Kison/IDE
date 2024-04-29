@@ -80,6 +80,7 @@ private:
     void createMenus();
     void createToolbars();
     void createColumnsWidgets(QVBoxLayout *verticalLayout, DiagramItem *item);
+    void createRelationshipsWidgets(QVBoxLayout *verticalLayout, Arrow *arrow);
     void deleteLayout(QLayout *layout);
 
     template<typename PointerToMemberFunction>
