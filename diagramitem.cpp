@@ -23,11 +23,11 @@
 DiagramItem::DiagramItem(QMenu *contextMenu,
                          QGraphicsItem *parent)
     : QGraphicsPolygonItem(parent)
+    , table("New item")
     , myContextMenu(contextMenu)
 {
 
-    QPainterPath path;
-        // Create polygons for the table name and the item list
+    // Create polygons for the table name and the item list
     tableNamePolygon << QPointF(-100, -75) << QPointF(100, -75)
                      << QPointF(100, -25) << QPointF(-100, -25)
                      << QPointF(-100, -75);
@@ -43,8 +43,7 @@ DiagramItem::DiagramItem(QMenu *contextMenu,
     setFlag(QGraphicsItem::ItemIsSelectable, true);
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 
-    // name the table
-    table = new Table("New item");
+    // draw name on the diagram item
     drawName(tableNamePolygon);
 }
 
@@ -68,7 +67,7 @@ void DiagramItem::drawName(const QPolygonF& polygon) {
     }
 
     QGraphicsTextItem *tableName = new QGraphicsTextItem();
-    tableName->setPlainText(table->name);
+    tableName->setPlainText(table.name);
     // textItem->setFlags(ItemIsSelectable | ItemIsFocusable);
 
     // Set the width of the bounding rectangle
@@ -129,7 +128,7 @@ void DiagramItem::addArrow(Arrow *arrow)
 
 QStringList DiagramItem::getColumns() const {
     QStringList columnNames;
-    for (const auto& column : table->columns) {
+    for (const auto& column : table.columns) {
         columnNames.append(column.name + " (" + column.type + ")");
     }
     return columnNames;
@@ -138,7 +137,7 @@ QStringList DiagramItem::getColumns() const {
 
 
 void DiagramItem::updateName(const QString& newText) {
-    table->name = newText;
+    table.name = newText;
     drawName(tableNamePolygon);
 }
 
@@ -222,7 +221,7 @@ void DiagramItem::drawColumns() {
 
     // Update the size of the item list polygon
     itemListPolygon << QPointF(-100, -25) << QPointF(100, -25)
-                    << QPointF(100, -15 + 20 * table->columns.size()) << QPointF(-100, -15 + 20 * table->columns.size())
+                    << QPointF(100, -15 + 20 * table.columns.size()) << QPointF(-100, -15 + 20 * table.columns.size())
                     << QPointF(-100, -25);
 
     // Update tablePolygon by combining tableNamePolygon and itemListPolygon
@@ -232,7 +231,7 @@ void DiagramItem::drawColumns() {
     setPolygon(myPolygon);
 
     qreal y = itemListPolygon.boundingRect().y(); // Initial y-coordinate for the first item name
-    for (const Column &column : table->columns) {
+    for (const Column &column : table.columns) {
         QGraphicsTextItem *textItem = new QGraphicsTextItem(column.name + " (" + column.type + ")" + (column.isPrimary ? " Primary" : ""));
         textItem->setDefaultTextColor(Qt::red);
 
@@ -253,14 +252,14 @@ void DiagramItem::drawColumns() {
 void DiagramItem::addItem(QString& name, QString &type, bool isPrimary) {
     // std::cout << "Add item: " << name << "(" << type << ")" << std::endl;
     if (isPrimary) {
-        for (int i = 0; i < table->columns.size(); i++) {
-            table->columns[i].isPrimary = false;
+        for (int i = 0; i < table.columns.size(); i++) {
+            table.columns[i].isPrimary = false;
         }
         Column column(name, type, true);
-        table->columns << column;
+        table.columns << column;
     } else {
-        Column column(name, type, table->columns.size() == 0 ? true : false);
-        table->columns << column;
+        Column column(name, type, table.columns.size() == 0 ? true : false);
+        table.columns << column;
     }
 
     drawColumns();
@@ -269,12 +268,14 @@ void DiagramItem::addItem(QString& name, QString &type, bool isPrimary) {
 
 
 void DiagramItem::updateColumn(int index, Column& newColumn) {
-    // reset primary
-    for (int i = 0; i < table->columns.size(); i++) {
-        table->columns[i].isPrimary = false;
+    if (table.columns[index].isPrimary != newColumn.isPrimary) {
+        // reset primary
+        for (int i = 0; i < table.columns.size(); i++) {
+            table.columns[i].isPrimary = false;
+        }
     }
 
-    table->columns[index] = newColumn;
+    table.columns[index] = newColumn;
 
     drawColumns();
 }
@@ -282,10 +283,10 @@ void DiagramItem::updateColumn(int index, Column& newColumn) {
 
 
 void DiagramItem::removeColumn(int index) {
-    if (index >= 0 && index < table->columns.size()) {
-        table->columns.remove(index);
-        if (table->columns.size() > 0) {
-            table->columns[0].isPrimary = true;
+    if (index >= 0 && index < table.columns.size()) {
+        table.columns.remove(index);
+        if (table.columns.size() > 0) {
+            table.columns[0].isPrimary = true;
         }
     }
 

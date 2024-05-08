@@ -3,6 +3,7 @@
 
 // This class adds functionality to handle DiagramItems, Arrows, and DiagramTextItems
 
+#include "Relationship.h"
 #include "diagramitem.h"
 #include "diagramtextitem.h"
 
@@ -37,6 +38,7 @@ public:
     void setTextColor(const QColor &color);
     void setItemColor(const QColor &color);
     void setFont(const QFont &font);
+    QRectF drawDiagram(QList<Table> &tables, QList<Relationship> &relationships);
     DiagramItem* drawTable();
 
 public slots:

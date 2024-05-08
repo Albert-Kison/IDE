@@ -44,7 +44,7 @@ public:
     QPixmap image() const;
     int type() const override { return Type; }
 
-    Table *table;
+    Table table;
 
 // public slots:
 //     void updateTextPosition();

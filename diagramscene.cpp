@@ -240,6 +240,128 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 
 
+QRectF DiagramScene::drawDiagram(QList<Table> &tables, QList<Relationship> &relationships) {
+    // Clear the scene before drawing
+    clear();
+
+    // middle of the view
+    qreal x = 5000 / 2;
+    qreal y = 5000 / 2;
+    QRectF focusRect;
+
+    // draw tables
+    for (int i = 0; i < tables.size(); ++i) {
+        DiagramItem *item = drawTable();
+
+        // change the coordinates so that the items do not overlap
+        if (i % 2 == 0) {
+            x += 250;
+        } else {
+            y += 250;
+        }
+
+        item->setPos(QPointF(x, y));
+        item->updateName(tables[i].name);   // assign the table's name
+
+        // view.centerOn(item);
+        emit itemInserted(item);
+
+        // add columns to the table
+        for (int j = 0; j < tables[i].columns.size(); ++j) {
+            item->addItem(tables[i].columns[j].name, tables[i].columns[j].type, tables[i].columns[j].isPrimary);
+        }
+
+        focusRect = focusRect.united(item->sceneBoundingRect());
+
+        x = 5000 / 2;   // reset the x coordinate
+    }
+
+
+    // draw relationships
+    QList<Arrow *> arrows;
+    std::cout << "Size: " << relationships.size() << std::endl;
+    for (int i = 0; i < relationships.size(); ++i) {
+        std::cout << "Parent table: " << relationships[i].parentTableName.toStdString() << std::endl;
+        std::cout << "Parent column: " << relationships[i].parentColumnName.toStdString() << std::endl;
+        std::cout << "Child table: " << relationships[i].childTableName.toStdString() << std::endl;
+        std::cout << "Child column: " << relationships[i].childColumnName.toStdString() << std::endl;
+        std::cout << "----------------------------------------" << std::endl;
+
+        DiagramItem *startTable;
+        DiagramItem *endTable;
+        Column *startColumn;
+        Column *endColumn;
+
+        // get the start and end tables and columns
+        foreach (QGraphicsItem* item, items()) {
+            if (DiagramItem *currentItem = qgraphicsitem_cast<DiagramItem *>(item)) {
+                // get the parent table
+                if (currentItem->table.name == relationships[i].parentTableName) {
+                    startTable = currentItem;
+
+                    // get the parent column
+                    for (Column& col : startTable->table.columns) {
+                        if (col.name == relationships[i].parentColumnName) {
+                            startColumn = &col;
+                        }
+                    }
+                }
+
+                // get the child table
+                if (currentItem->table.name == relationships[i].childTableName) {
+                    endTable = currentItem;
+
+                    // get the child column
+                    for (Column& col : endTable->table.columns) {
+                        if (col.name == relationships[i].childColumnName) {
+                            endColumn = &col;
+                        }
+                    }
+                }
+            }
+        }
+
+        // assign a relationship to the same arrow if it is one-to-many
+        bool hasDuplicate = false;
+        for (int j = 0; j < arrows.size(); ++j) {
+            // if parent table and child table names are the same
+            if (startTable->table.name == arrows[j]->startItem()->table.name && endTable->table.name == arrows[j]->endItem()->table.name) {
+                hasDuplicate = true;
+                arrows[j]->columnRelationships << ColumnRelationship(startColumn, endColumn);
+                clearSelection();
+                arrows[j]->setSelected(true);
+                // break;
+            }
+        }
+
+        // if no one-to-many, then create a new arrow
+        if (!hasDuplicate) {
+            // draw the relationships
+            Arrow *arrow = new Arrow(startTable, endTable);
+            arrow->columnRelationships << ColumnRelationship(startColumn, endColumn);
+            arrow->setColor(Qt::black);
+
+            // add arrow to each item and to the scene
+            startTable->addArrow(arrow);
+            endTable->addArrow(arrow);
+            arrow->setZValue(-1000.0);
+            connect(arrow, &Arrow::selectedChange, this, &DiagramScene::itemSelected);
+            clearSelection();
+            arrow->setSelected(true);
+            addItem(arrow);
+
+            // update its position when the items are being moved
+            arrow->updatePosition();
+
+            arrows << arrow;
+        }
+    }
+
+    return focusRect;
+}
+
+
+
 // check whether a selected item exists and also is of the specified diagram type
 bool DiagramScene::isItemChange(int type) const
 {

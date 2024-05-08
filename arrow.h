@@ -10,10 +10,10 @@
 class DiagramItem;
 
 struct ColumnRelationship {
-    Column startColumn;
-    Column endColumn;
+    Column *startColumn;
+    Column *endColumn;
 
-    ColumnRelationship(Column& startColumn, Column& endColumn) : startColumn(startColumn), endColumn(endColumn) {}
+    ColumnRelationship(Column* startColumn, Column* endColumn) : startColumn(startColumn), endColumn(endColumn) {}
 };
 
 class Arrow : public QObject, public QGraphicsLineItem
