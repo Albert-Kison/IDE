@@ -58,7 +58,7 @@ void SQLCodeGenerator::onGenerateSqlCodeClicked(QList<Table> &tables, QList<Rela
 
 void SQLCodeGenerator::parseSql(QString &code) {
     std::cout << "Clicked parse sql" << std::endl;
-    std::cout << code << std::endl;
+    std::cout << code.toStdString() << std::endl;
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName(":memory:"); // Use in-memory database
@@ -71,9 +71,6 @@ void SQLCodeGenerator::parseSql(QString &code) {
     QStringList statements = code.split(";", Qt::SkipEmptyParts);
     QSqlQuery query(db);
 
-    // Map to store foreign key relationships
-    QMap<QString, Relationship> foreignKeyMap;
-
     // Execute SQL statements
     for (const QString& statement : statements) {
 
@@ -84,27 +81,9 @@ void SQLCodeGenerator::parseSql(QString &code) {
 
         // Execute each statement separately
         if (!query.exec(statement)) {
-            std::cout << "Error executing SQL statement: " << query.lastError().text() << std::endl;
+            std::cout << "Error executing SQL statement: " << query.lastError().text().toStdString() << std::endl;
             db.close();
             return;
-        }
-    }
-
-    // Retrieve foreign key relationships
-    for (const QString& tableName : db.tables()) {
-        QString foreignKeyQuery = QString("PRAGMA foreign_key_list(%1)").arg(tableName);
-        if (query.exec(foreignKeyQuery)) {
-            while (query.next()) {
-                QString columnName = query.value(3).toString();
-                QString referencedTable = query.value(2).toString();
-                QString referencedColumn = query.value(4).toString();
-
-                // Check if referenced table exists in the database
-                if (db.tables().contains(referencedTable)) {
-                    // Store the foreign key relationship
-                    foreignKeyMap.insert(columnName, Relationship(referencedTable, referencedColumn, tableName, columnName));
-                }
-            }
         }
     }
 
@@ -112,16 +91,36 @@ void SQLCodeGenerator::parseSql(QString &code) {
     QStringList tables = db.tables();
     QList<Table> diagramTables;
     QList<Relationship> diagramRelationships;
+
     for (const QString& tableName : tables) {
-        std::cout << "Table:" << tableName << std::endl;
+        std::cout << "Table:" << tableName.toStdString() << std::endl;
         Table table(tableName);
 
         // Retrieve table columns and their data types
         QSqlRecord record = db.record(tableName);
         for (int i = 0; i < record.count(); ++i) {
             QSqlField field = record.field(i);
-            std::cout << "    Column:" << field.name() << ", Type:" << field.metaType().name() << std::endl;
+            std::cout << "    Column:" << field.name().toStdString() << ", Type:" << field.metaType().name() << std::endl;
             table.addColumn(field.name(), field.metaType().name());
+        }
+
+        // Retrieve foreign key relationships using PRAGMA foreign_key_list
+        QString foreignKeyQuery = QString("PRAGMA foreign_key_list(%1)").arg(tableName);
+        if (query.exec(foreignKeyQuery)) {
+            while (query.next()) {
+                QString columnName = query.value(3).toString();
+                QString referencedTable = query.value(2).toString();
+                QString referencedColumn = query.value(4).toString();
+
+                std::cout << "    Foreign Key:" << columnName.toStdString()
+                          << ", Referenced Column:" << referencedColumn.toStdString()
+                          << ", Referenced Table:" << referencedTable.toStdString() << std::endl;
+
+                // Store the foreign key relationship
+                diagramRelationships << Relationship(referencedTable, referencedColumn, tableName, columnName);
+            }
+        } else {
+            std::cout << "Error retrieving foreign keys: " << query.lastError().text().toStdString() << std::endl;
         }
 
         // Retrieve primary key columns using PRAGMA table_info
@@ -131,9 +130,9 @@ void SQLCodeGenerator::parseSql(QString &code) {
                 bool isPrimaryKey = query.value(5).toBool();
                 if (isPrimaryKey) {
                     QString columnName = query.value(1).toString();
-                    std::cout << "    Primary Key:" << columnName << std::endl;
+                    std::cout << "    Primary Key:" << columnName.toStdString() << std::endl;
 
-                    // update primary key in the table
+                    // Update primary key in the table
                     for (int i = 0; i < table.columns.size(); ++i) {
                         if (table.columns[i].name == columnName) {
                             table.columns[i].isPrimary = true;
@@ -142,19 +141,11 @@ void SQLCodeGenerator::parseSql(QString &code) {
                     }
                 }
             }
+        } else {
+            std::cout << "Error retrieving primary keys: " << query.lastError().text().toStdString() << std::endl;
         }
-        diagramTables << table;
 
-        // Display foreign key relationships
-        for (auto it = foreignKeyMap.constBegin(); it != foreignKeyMap.constEnd(); ++it) {
-            const Relationship& relationship = it.value();
-            if (relationship.childTableName == tableName) {
-                std::cout << "    Foreign Key:" << relationship.parentColumnName
-                          << ", Referenced Column:" << relationship.childColumnName
-                          << ", Referenced Table:" << relationship.parentTableName << std::endl;
-                diagramRelationships << relationship;
-            }            
-        }
+        diagramTables << table;
     }
 
     // Close the database connection

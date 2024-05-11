@@ -1,7 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "QtWidgets/qboxlayout.h"
 #include "codeeditor.h"
+#include "projectwindow.h"
+#include "Project.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -18,16 +21,32 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-signals:
-    void generateDiagramClicked(QString &code);
-
 private slots:
-    void on_textEdit_textChanged();
-    // void onFileSelected(const QString &filePath);
+    void createButtonPressed();
 
-private:
+private:    
+
+    void displayProjects();
+    void saveProjects();
+    void initUI();
+    void deleteLayout(QLayout *layout);
+    void createProjectsLayout(QVBoxLayout *projectsVerticalLayout, QList<Project> *projects);
+    void createJsonFile(const QString& filePath);
+    void createTextFile(const QString& filePath);
+    void createFolder(const QString& folderPath);
+
+
+    QList<Project> *projects;
+    QVBoxLayout *projectsVerticalLayout;
+
     Ui::MainWindow *ui;
+    QVBoxLayout *layout;
     CodeEditor *editor;
     QTabWidget *tabWidget;
+    ProjectWindow *projectWindow;
+
+signals:
+    void generateDiagramClicked(QString &code);
+    void openProject(const Project& project);
 };
 #endif // MAINWINDOW_H
