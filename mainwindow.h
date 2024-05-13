@@ -31,9 +31,11 @@ private:
     void initUI();
     void deleteLayout(QLayout *layout);
     void createProjectsLayout(QVBoxLayout *projectsVerticalLayout, QList<Project> *projects);
-    void createJsonFile(const QString& filePath);
-    void createTextFile(const QString& filePath);
+    void createJsonFile(const QString& filePath, const Project &project);
+    void createTextFile(const QString& filePath, const Project &project);
     void createFolder(const QString& folderPath);
+    void openProjectButtonPressed(const Project& project);
+    void deleteProjectButtonPressed(const Project& project);
 
 
     QList<Project> *projects;

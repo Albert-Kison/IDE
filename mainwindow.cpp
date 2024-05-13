@@ -108,11 +108,17 @@ void MainWindow::createProjectsLayout(QVBoxLayout *projectsVerticalLayout, QList
         openProjectButton->setFixedWidth(100);
         horizontalLayout->addWidget(openProjectButton);
 
+        connect(openProjectButton, &QPushButton::clicked, [this, i, projects]() {
+            openProjectButtonPressed(projects->at(i));
+        });
+
         QPushButton *deleteProjectButton = new QPushButton("Delete");
         deleteProjectButton->setFixedWidth(100);
         horizontalLayout->addWidget(deleteProjectButton);
 
         connect(deleteProjectButton, &QPushButton::clicked, [this, i, projectsVerticalLayout, projects]() {
+            deleteProjectButtonPressed(projects->at(i));
+
             projects->removeAt(i); // Remove the project at the specified index
             saveProjects(); // Save the updated project list
             deleteLayout(projectsVerticalLayout);
@@ -165,6 +171,36 @@ void MainWindow::deleteLayout(QLayout *layout) {
 
 
 
+void MainWindow::openProjectButtonPressed(const Project& project) {
+    hide();
+
+    projectWindow = new ProjectWindow(this);
+    connect(this, &MainWindow::openProject, projectWindow, &ProjectWindow::onOpenProject);
+    connect(projectWindow, &ProjectWindow::finished, this, [this]() {
+        show();
+        delete projectWindow;
+    });
+
+    std::cout << "Emit open project" << std::endl;
+    emit openProject(project);
+
+    projectWindow->show();
+}
+
+
+
+void MainWindow::deleteProjectButtonPressed(const Project& project) {
+    QDir dir(project.path);
+    if (dir.exists()) {
+        // Remove all files and directories within the project directory
+        dir.removeRecursively();
+    } else {
+        qDebug() << "Error: Project directory does not exist";
+    }
+}
+
+
+
 void MainWindow::createButtonPressed() {
     hide();
 
@@ -176,35 +212,38 @@ void MainWindow::createButtonPressed() {
         QString folderName = QFileDialog::getExistingDirectory(this, tr("Save Project"), QDir::homePath());
 
         if (!folderName.isEmpty()) {
+
+            // Create the folder with the provided name
+            QString folderPath = folderName + QDir::separator() + projectName;
+            createFolder(folderPath);
+
             // Add the project using the selected folder name
-            Project newProjectProject(projectName, folderName);
-            projects->append(newProjectProject);
+            Project newProject(projectName, folderPath);
+            projects->append(newProject);
 
             // Save the projects list
             saveProjects();
 
-            // Create the folder with the provided name
-            QString folderPath = folderName + "/" + projectName;
-            createFolder(folderPath);
-
             // Create the JSON file in the folder
-            QString jsonFilePath = folderPath + "/project_data.json";
-            createJsonFile(jsonFilePath);
+            QString jsonFilePath = folderPath + QDir::separator() + "project_data.json";
+            createJsonFile(jsonFilePath, newProject);
 
             // Create the text file in the folder
-            QString textFilePath = folderPath + "/project_text.txt";
-            createTextFile(textFilePath);
+            QString textFilePath = folderPath + QDir::separator() + "project_text.txt";
+            createTextFile(textFilePath, newProject);
 
             // Open the project window
             projectWindow = new ProjectWindow(this);
 
+            connect(this, &MainWindow::openProject, projectWindow, &ProjectWindow::onOpenProject);
             connect(projectWindow, &ProjectWindow::finished, this, [this]() {
                 deleteLayout(projectsVerticalLayout);
                 createProjectsLayout(projectsVerticalLayout, projects);
                 show();
+                delete projectWindow;
             });
 
-            emit openProject(newProjectProject);
+            emit openProject(newProject);
 
             projectWindow->show();
         }
@@ -225,11 +264,10 @@ void MainWindow::createFolder(const QString& folderPath) {
     }
 }
 
-void MainWindow::createJsonFile(const QString& filePath) {
+void MainWindow::createJsonFile(const QString& filePath, const Project &project) {
     // Create a JSON object
     QJsonObject jsonObject;
-    jsonObject["project_name"] = "Test";
-    // Add more data as needed
+    jsonObject["project_name"] = project.name;
 
     // Convert the JSON object to a JSON document
     QJsonDocument jsonDoc(jsonObject);
@@ -246,14 +284,13 @@ void MainWindow::createJsonFile(const QString& filePath) {
     }
 }
 
-void MainWindow::createTextFile(const QString& filePath) {
+void MainWindow::createTextFile(const QString& filePath, const Project &project) {
     // Open the file for writing
     QFile file(filePath);
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         // Create a text stream to write to the file
         QTextStream out(&file);
-        out << "This is a sample text file.";
-        // Write more data as needed
+        out << "-- " + project.name + "\n";
         file.close();
     } else {
         // Handle error if unable to open the file

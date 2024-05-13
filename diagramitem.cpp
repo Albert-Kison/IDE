@@ -249,7 +249,7 @@ void DiagramItem::drawColumns() {
 
 
 
-void DiagramItem::addItem(QString& name, QString &type, bool isPrimary) {
+void DiagramItem::addItem(const QString& name, const QString &type, bool isPrimary) {
     // std::cout << "Add item: " << name << "(" << type << ")" << std::endl;
     if (isPrimary) {
         for (int i = 0; i < table.columns.size(); i++) {

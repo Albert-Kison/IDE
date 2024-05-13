@@ -100,8 +100,25 @@ void SQLCodeGenerator::parseSql(QString &code) {
         QSqlRecord record = db.record(tableName);
         for (int i = 0; i < record.count(); ++i) {
             QSqlField field = record.field(i);
-            std::cout << "    Column:" << field.name().toStdString() << ", Type:" << field.metaType().name() << std::endl;
-            table.addColumn(field.name(), field.metaType().name());
+            QString typeName;
+            switch (field.metaType().id()) {
+                case QMetaType::Bool: typeName = "BOOLEAN"; break; // Map QVariant::Bool to SQL boolean type
+                case QMetaType::Int: typeName = "INTEGER"; break;
+                case QMetaType::UInt: typeName = "UINT"; break;
+                case QMetaType::LongLong: typeName = "BIGINT"; break;
+                case QMetaType::ULongLong: typeName = "BIGUINT"; break;
+                case QMetaType::Double: typeName = "REAL"; break;
+                case QMetaType::QString: typeName = "TEXT"; break;
+                case QMetaType::QDate: typeName = "DATE"; break;
+                case QMetaType::QDateTime: typeName = "DATE"; break;
+                case QMetaType::QByteArray: typeName = "BLOB"; break;
+                case QMetaType::Char: typeName = "CHAR"; break;
+                // Add more cases for other SQL data types as needed
+                default: typeName = "UNKNOWN";
+            };
+            std::cout << field.metaType().id() << std::endl;
+            std::cout << "    Column:" << field.name().toStdString() << ", SQL Type:" << typeName.toStdString() << std::endl;
+            table.addColumn(field.name(), typeName);
         }
 
         // Retrieve foreign key relationships using PRAGMA foreign_key_list

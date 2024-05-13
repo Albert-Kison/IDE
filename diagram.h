@@ -41,6 +41,9 @@ class Diagram : public QMainWindow
 public:
     Diagram();
 
+    QJsonObject getSceneData();
+    void openScene(QJsonObject &sceneDataJSON);
+
 private slots:
     void backgroundButtonGroupClicked(QAbstractButton *button);
     void buttonGroupClicked(QAbstractButton *button);

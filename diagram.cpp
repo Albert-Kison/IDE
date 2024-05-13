@@ -485,6 +485,109 @@ void Diagram::drawDiagram(QList<Table> &tables, QList<Relationship> &relationshi
 
 
 
+// open scene from JSON
+void Diagram::openScene(QJsonObject &sceneDataJSON) {
+    std::cout << "Called open scene in diagram" << std::endl;
+    view->centerOn(scene->openScene(sceneDataJSON).center());
+}
+
+
+
+// convert the scene to JSON
+QJsonObject Diagram::getSceneData() {
+
+    // stores the scene data
+    QJsonObject sceneData;
+
+    // array of text items
+    QJsonArray textArray;
+    // array of table items
+    QJsonArray tablesArray;
+    // array of arrow items
+    QJsonArray arrowsArray;
+
+    std::cout << "Scene size: " << scene->items().size() << std::endl;;
+    // Iterate over all items in the scene
+    foreach (QGraphicsItem *item, scene->items()) {
+        // stores the data about the item
+        QJsonObject itemData;
+
+        // get the item's position
+        itemData["x"] = item->pos().x();
+        itemData["y"] = item->pos().y();
+
+        // get the text item
+        DiagramTextItem *textItem = qgraphicsitem_cast<DiagramTextItem *>(item);
+        // get the table item
+        DiagramItem *table = qgraphicsitem_cast<DiagramItem *>(item);
+        // get the arrow
+        Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
+
+        // convert a text item to JSON
+        if (textItem) {
+            itemData["type"] = "text";
+            itemData["text"] = textItem->toPlainText();
+            itemData["color"] = textItem->defaultTextColor().name(QColor::HexRgb);
+            itemData["font_text"] = textItem->font().toString();
+            itemData["font_size"] = textItem->font().pointSize();
+            itemData["is_bold"] = textItem->font().weight() == QFont::Bold;
+            itemData["is_italic"] = textItem->font().italic();
+            itemData["is_underline"] = textItem->font().underline();
+            textArray.append(itemData);
+        }
+
+        // convert a table item to JSON
+        if (table) {
+            itemData["type"] = "table";
+            itemData["name"] = table->table.name;
+
+            // stores the table columns
+            QJsonArray columns;
+            // convert a table column to JSON
+            for (int i = 0; i < table->table.columns.size(); ++i) {
+                QJsonObject column;
+                column["name"] = table->table.columns[i].name;
+                column["type"] = table->table.columns[i].type;
+                column["is_primary"] = table->table.columns[i].isPrimary;
+                columns.append(column);
+            }
+            itemData["columns"] = columns;
+            tablesArray.append(itemData);
+        }
+
+        // convert an arrow item to JSON
+        if (arrow) {
+            itemData["type"] = "arrow";
+            itemData["start_item_name"] = arrow->startItem()->table.name;
+            itemData["end_item_name"] = arrow->endItem()->table.name;
+            // stores the column relationships
+            QJsonArray columnRelationships;
+            // convert a column relationship to JSON
+            for (int i = 0; i < arrow->columnRelationships.size(); ++i) {
+                QJsonObject columnRelationship;
+                columnRelationship["start_column_name"] = arrow->columnRelationships[i].startColumn->name;
+                columnRelationship["end_column_name"] = arrow->columnRelationships[i].endColumn->name;
+                columnRelationships.append(columnRelationship);
+            }
+            itemData["column_relationships"] = columnRelationships;
+            arrowsArray.append(itemData);
+        }
+    }
+
+    // Clear existing data in sceneData to avoid duplications
+    sceneData.remove("text_items");
+    sceneData.remove("table_items");
+    sceneData.remove("arrow_items");
+
+    sceneData["text_items"] = textArray;
+    sceneData["table_items"] = tablesArray;
+    sceneData["arrow_items"] = arrowsArray;
+
+    return sceneData;
+}
+
+
+
 // brings selected item to the front of the scene
 void Diagram::bringToFront()
 {
@@ -532,6 +635,7 @@ void Diagram::itemInserted(DiagramItem *item)
 {
     pointerTypeGroup->button(int(DiagramScene::MoveItem))->setChecked(true);
     scene->setMode(DiagramScene::Mode(pointerTypeGroup->checkedId()));
+    itemSelected(item);
     // buttonGroup->button(int(item->diagramType()))->setChecked(false);
 }
 
@@ -755,10 +859,11 @@ void Diagram::itemSelected(QGraphicsItem *item)
             // Choose the data types
             QComboBox *dataTypeComboBox = new QComboBox;
             // Add SQL data types to the combo box
-            dataTypeComboBox->addItem("INT");
-            dataTypeComboBox->addItem("VARCHAR");
-            dataTypeComboBox->addItem("DATE");
-            // Add more data types as needed
+            dataTypeComboBox->addItem("INTEGER");
+            dataTypeComboBox->addItem("TEXT");
+            dataTypeComboBox->addItem("REAL");
+            dataTypeComboBox->addItem("BLOB");
+            dataTypeComboBox->addItem("BOOLEAN");
 
             // Item name (line edit)   data type (combo box)
             QHBoxLayout *itemLayout = new QHBoxLayout;
@@ -809,13 +914,14 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
     // if the selected item is an arrow (relationship)
     if (arrow) {
-        std::cout << "Arrow selected" << std::endl;
+        std::cout << "Arrow selected juguguyg" << std::endl;
 
         // delete the existing layout
         if (sideWidget->layout()) {
             deleteLayout(sideWidget->layout());
             sideWidget->hide();
         }
+        std::cout << "deleted the arrow layout" << std::endl;
 
         // main widget layout
         // From: (label)   Combo box with data types (ComboBox)
@@ -837,13 +943,15 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
         verticalMainLayout->addWidget(closeButton);
         verticalMainLayout->addWidget(addRelationshipButton);
+        std::cout << "Added the relationship widget" << std::endl;
 
 
         // if there are columns in start and end items and no relationships yet, then create a new relationship
         if (!arrow->startItem()->table.columns.isEmpty() && !arrow->endItem()->table.columns.isEmpty() && arrow->columnRelationships.size() == 0) {
             // arrow->setEndColumn(arrow->endItem()->table->columns[0]);
             arrow->columnRelationships << ColumnRelationship(&arrow->startItem()->table.columns[0], &arrow->endItem()->table.columns[0]);
-        }
+            std::cout << "Created a new relationship" << std::endl;
+        }        
 
         QVBoxLayout *verticalRelationshipsLayout = new QVBoxLayout;
         verticalRelationshipsLayout->setAlignment(Qt::AlignTop);
@@ -864,7 +972,7 @@ void Diagram::itemSelected(QGraphicsItem *item)
             if (!arrow->startItem()->table.columns.isEmpty() && !arrow->endItem()->table.columns.isEmpty()) {
                 // arrow->setEndColumn(arrow->endItem()->table->columns[0]);
                 arrow->columnRelationships << ColumnRelationship(&arrow->startItem()->table.columns[0], &arrow->endItem()->table.columns[0]);
-                std::cout << arrow->columnRelationships.size() << std::endl;
+                std::cout << "Relationship size: " << arrow->columnRelationships.size() << std::endl;
             }
 
             // update the widget
@@ -910,19 +1018,21 @@ void Diagram::createColumnsWidgets(QVBoxLayout *verticalColumnsLayout, DiagramIt
 
         // combo box with data types
         QComboBox *dataTypeComboBox = new QComboBox;
-        dataTypeComboBox->addItem("INT");
-        dataTypeComboBox->addItem("VARCHAR");
-        dataTypeComboBox->addItem("DATE");
+        dataTypeComboBox->addItem("INTEGER");
+        dataTypeComboBox->addItem("TEXT");
+        dataTypeComboBox->addItem("REAL");
+        dataTypeComboBox->addItem("BLOB");
+        dataTypeComboBox->addItem("BOOLEAN");
         // Add more data types as needed
 
-        // set the current column data type
-        dataTypeComboBox->setCurrentText(item->table.columns[i].type);
         // when the data type is changed, re-draw the columns on the diagram and update it in the table
         connect(dataTypeComboBox, &QComboBox::currentTextChanged, [=](const QString &text) {
             QString newDataType = text;
             Column newColumn(item->table.columns[i].name, newDataType, item->table.columns[i].isPrimary);
             item->updateColumn(i, newColumn);
         });
+        // set the current column data type
+        dataTypeComboBox->setCurrentText(item->table.columns[i].type);
 
         // sets a primary column
         QRadioButton *primaryKeyRadioButton = new QRadioButton("Primary Key");
@@ -962,6 +1072,13 @@ void Diagram::createColumnsWidgets(QVBoxLayout *verticalColumnsLayout, DiagramIt
 void Diagram::createRelationshipsWidgets(QVBoxLayout *verticalLayout, Arrow *arrow) {
     std::cout << arrow->columnRelationships.size() << std::endl;
 
+    std::cout << arrow->startItem()->table.columns.size() << std::endl;
+    std::cout << arrow->endItem()->table.columns.size() << std::endl;
+    if (arrow->startItem()->table.columns.size() == 0 || arrow->endItem()->table.columns.size() == 0) {
+        std::cout << "Return function" << std::endl;
+        return;
+    }
+
     for (int i = 0; i < arrow->columnRelationships.size(); ++i) {
         QVBoxLayout *relationshipLayout = new QVBoxLayout;
 
@@ -969,16 +1086,20 @@ void Diagram::createRelationshipsWidgets(QVBoxLayout *verticalLayout, Arrow *arr
         QHBoxLayout *fromLayout = new QHBoxLayout;
 
         QLabel *fromLabel = new QLabel("From: ");
+        std::cout << "Created label from" << std::endl;
         QComboBox* fromComboBox = new QComboBox();
         for (int j = 0; j < arrow->startItem()->table.columns.size(); j++) {
             fromComboBox->addItem(arrow->startItem()->table.columns[j].name + " (" + arrow->startItem()->table.columns[j].type + ")");
         }
+        std::cout << "Added items to from combo box" << std::endl;
         fromComboBox->setCurrentText(arrow->columnRelationships[i].startColumn->name + " (" + arrow->columnRelationships[i].startColumn->type + ")");
+        std::cout << "set text for from combo box" << std::endl;
 
         connect(fromComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, arrow, i](int index) {
             // arrow->setStartColumn(arrow->startItem()->table->columns[index]);
             arrow->columnRelationships[i].startColumn = &arrow->startItem()->table.columns[index];
         });
+        std::cout << "Connected the slots" << std::endl;
         arrow->columnRelationships[i].startColumn = &arrow->startItem()->table.columns[fromComboBox->currentIndex()];
         std::cout << "From: " << arrow->columnRelationships[i].startColumn->name.toStdString() << std::endl;
 
@@ -991,15 +1112,19 @@ void Diagram::createRelationshipsWidgets(QVBoxLayout *verticalLayout, Arrow *arr
 
         QLabel *toLabel = new QLabel("To: ");
         QComboBox* toComboBox = new QComboBox();
+        std::cout << "--------------------------------------------" << std::endl;
         for (int j = 0; j < arrow->endItem()->table.columns.size(); j++) {
             toComboBox->addItem(arrow->endItem()->table.columns[j].name + " (" + arrow->endItem()->table.columns[j].type + ")");
         }
+        std::cout << "Added items to to combo box" << std::endl;
         toComboBox->setCurrentText(arrow->columnRelationships[i].endColumn->name + " (" + arrow->columnRelationships[i].endColumn->type + ")");
+        std::cout << "set current column of end item" << std::endl;
 
         connect(toComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [this, arrow, i](int index) {
             // arrow->setEndColumn(arrow->endItem()->table->columns[index]);
             arrow->columnRelationships[i].endColumn = &arrow->endItem()->table.columns[index];
         });
+        std::cout << "connect to combo box" << std::endl;
         arrow->columnRelationships[i].endColumn = &arrow->endItem()->table.columns[toComboBox->currentIndex()];
         std::cout << "To: " << arrow->columnRelationships[i].endColumn->name.toStdString() << std::endl;
 
@@ -1018,6 +1143,8 @@ void Diagram::createRelationshipsWidgets(QVBoxLayout *verticalLayout, Arrow *arr
         relationshipLayout->addWidget(deleteButton);
         verticalLayout->addLayout(relationshipLayout);
     }
+
+    std::cout << "created relationships widget" << std::endl;
 }
 
 

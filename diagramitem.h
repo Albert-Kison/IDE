@@ -34,7 +34,7 @@ public:
     void removeArrows();
     QPolygonF polygon() const { return myPolygon; }
     void addArrow(Arrow *arrow);
-    void addItem(QString& name, QString& type, bool isPrimary = false);
+    void addItem(const QString& name, const QString& type, bool isPrimary = false);
     void updateName(const QString& newText);
     void updateColumn(int index, Column& column);
     void removeColumn(int index);

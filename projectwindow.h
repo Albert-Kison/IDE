@@ -3,6 +3,8 @@
 
 #include <QDialog>
 #include "Project.h"
+#include "codeeditor.h"
+#include "diagram.h"
 
 namespace Ui {
 class ProjectWindow;
@@ -16,14 +18,19 @@ public:
     explicit ProjectWindow(QWidget *parent = nullptr);
     ~ProjectWindow();
 
+    CodeEditor *editor;
+
 signals:
     void generateDiagramClicked(QString &code);
 
 private:
-    Ui::ProjectWindow *ui;
+    Ui::ProjectWindow *ui;    
+    Diagram *diagram;
+    Project project;
 
-private slots:
+public slots:
     void onOpenProject(const Project &project);
+    void saveProject();
 };
 
 #endif // PROJECTWINDOW_H

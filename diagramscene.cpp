@@ -1,4 +1,6 @@
 #include "diagramscene.h"
+#include "QtCore/qjsonarray.h"
+#include "QtCore/qjsonobject.h"
 #include "arrow.h"
 
 #include <QGraphicsSceneMouseEvent>
@@ -137,15 +139,15 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
     case InsertText:
         // create a text item
-        textItem = new DiagramTextItem();
+        textItem = drawText();
         textItem->setFont(myFont);
-        textItem->setTextInteractionFlags(Qt::TextEditorInteraction);   // make it editable
-        textItem->setZValue(1000.0);
-        connect(textItem, &DiagramTextItem::lostFocus,
-                this, &DiagramScene::editorLostFocus);
-        connect(textItem, &DiagramTextItem::selectedChange,
-                this, &DiagramScene::itemSelected);
-        addItem(textItem);
+        // textItem->setTextInteractionFlags(Qt::TextEditorInteraction);   // make it editable
+        // textItem->setZValue(1000.0);
+        // connect(textItem, &DiagramTextItem::lostFocus,
+        //         this, &DiagramScene::editorLostFocus);
+        // connect(textItem, &DiagramTextItem::selectedChange,
+        //         this, &DiagramScene::itemSelected);
+        // addItem(textItem);
         textItem->setDefaultTextColor(myTextColor);
         textItem->setPos(mouseEvent->scenePos());
         emit textInserted(textItem);
@@ -154,6 +156,21 @@ void DiagramScene::mousePressEvent(QGraphicsSceneMouseEvent *mouseEvent)
         ;
     }
     QGraphicsScene::mousePressEvent(mouseEvent);
+}
+
+
+
+DiagramTextItem* DiagramScene::drawText() {
+    DiagramTextItem* textItem = new DiagramTextItem();
+    textItem->setTextInteractionFlags(Qt::TextEditorInteraction);
+    textItem->setZValue(1000.0);
+    connect(textItem, &DiagramTextItem::lostFocus,
+            this, &DiagramScene::editorLostFocus);
+    connect(textItem, &DiagramTextItem::selectedChange,
+            this, &DiagramScene::itemSelected);
+    addItem(textItem);
+
+    return textItem;
 }
 
 
@@ -240,6 +257,138 @@ void DiagramScene::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
 
 
 
+// parse JSON and draw the scene
+QRectF DiagramScene::openScene(QJsonObject& sceneDataJSON) {
+    clear();
+
+    QRectF focusRect;
+    std::cout << "Called open scene in scene" << std::endl;
+
+    // array of text items
+    QJsonArray textArray = sceneDataJSON["text_items"].toArray();
+    // array of table items
+    QJsonArray tablesArray = sceneDataJSON["table_items"].toArray();
+    // array of arrow items
+    QJsonArray arrowsArray = sceneDataJSON["arrow_items"].toArray();
+
+
+    // draw the text items
+    for (const QJsonValue& textValue : textArray) {
+        QJsonObject textJSON = textValue.toObject();
+        // create a text item
+        DiagramTextItem* textItem = drawText();
+        textItem->setPlainText(textJSON["text"].toString());
+        textItem->setPos(QPointF(textJSON["x"].toDouble(), textJSON["y"].toDouble()));
+        textItem->setDefaultTextColor(QColor(textJSON["color"].toString()));
+
+        // set the font
+        QFont font;
+        font.fromString(textJSON["font_text"].toString());
+        font.setPointSize(textJSON["font_size"].toInt());
+        font.setWeight(textJSON["is_bold"].toBool() ? QFont::Bold : QFont::Normal);
+        font.setItalic(textJSON["is_italic"].toBool());
+        font.setUnderline(textJSON["is_underline"].toBool());
+        textItem->setFont(font);
+
+        emit textInserted(textItem);
+
+        focusRect = focusRect.united(textItem->sceneBoundingRect());
+    }
+
+
+    // draw the tables
+    std::cout << "Tables array size: " << tablesArray.size() << std::endl;
+    for (const QJsonValue& tableValue : tablesArray) {
+        QJsonObject tableJSON = tableValue.toObject();
+        // create a table
+        DiagramItem *tableItem = drawTable();
+        tableItem->setPos(QPointF(tableJSON["x"].toDouble(), tableJSON["y"].toDouble()));
+        tableItem->updateName(tableJSON["name"].toString());
+
+        // add the columns
+        QJsonArray columns = tableJSON["columns"].toArray();
+        for (const QJsonValue& columnValue : columns) {
+            QJsonObject columnJSON = columnValue.toObject();
+
+            tableItem->addItem(columnJSON["name"].toString(), columnJSON["type"].toString(), columnJSON["is_primary"].toBool());
+        }
+
+        emit itemInserted(tableItem);
+        std::cout << "Table opened" << std::endl;
+
+        focusRect = focusRect.united(tableItem->sceneBoundingRect());
+    }
+
+
+    // draw the arrows
+    for (const QJsonValue& arrowValue : arrowsArray) {
+        QJsonObject arrowJSON = arrowValue.toObject();
+
+        DiagramItem *startTable;
+        DiagramItem *endTable;
+        foreach (QGraphicsItem* item, items()) {
+            if (DiagramItem *currentItem = qgraphicsitem_cast<DiagramItem *>(item)) {
+                // get the parent table
+                if (currentItem->table.name == arrowJSON["start_item_name"].toString()) {
+                    startTable = currentItem;
+                }
+
+                if (currentItem->table.name == arrowJSON["end_item_name"].toString()) {
+                    endTable = currentItem;
+                }
+            }
+        }
+
+        Arrow *arrow = new Arrow(startTable, endTable);
+
+        // add the column relationships
+        Column *startColumn = nullptr;
+        Column *endColumn = nullptr;
+        QJsonArray columnRelationships = arrowJSON["column_relationships"].toArray();
+        for (const QJsonValue& columnRelationshipValue : columnRelationships) {
+            QJsonObject columnRelationshipJSON = columnRelationshipValue.toObject();
+
+            // get the start and end columns
+            for (Column& col : startTable->table.columns) {
+                std::cout << "Start column: " << col.name.toStdString() << std::endl;
+                std::cout << (col.name == columnRelationshipJSON["start_column_name"].toString()) << std::endl;
+                if (col.name == columnRelationshipJSON["start_column_name"].toString()) {
+                    startColumn = &col;
+                }
+            }
+            for (Column& col : endTable->table.columns) {
+                if (col.name == columnRelationshipJSON["end_column_name"].toString()) {
+                    endColumn = &col;
+                }
+            }
+
+
+            if (startColumn != nullptr && endColumn != nullptr) {
+                std::cout << "Not null" << std::endl;
+                arrow->columnRelationships.append(ColumnRelationship(startColumn, endColumn));
+            }
+        }
+
+        arrow->setColor(Qt::black);
+
+        // add arrow to each item and to the scene
+        startTable->addArrow(arrow);
+        endTable->addArrow(arrow);
+        arrow->setZValue(-1000.0);
+        connect(arrow, &Arrow::selectedChange, this, &DiagramScene::itemSelected);
+        clearSelection();
+        arrow->setSelected(true);
+        addItem(arrow);
+
+        // update its position when the items are being moved
+        arrow->updatePosition();
+    }
+
+    return focusRect;
+}
+
+
+
 QRectF DiagramScene::drawDiagram(QList<Table> &tables, QList<Relationship> &relationships) {
     // Clear the scene before drawing
     clear();
@@ -264,12 +413,13 @@ QRectF DiagramScene::drawDiagram(QList<Table> &tables, QList<Relationship> &rela
         item->updateName(tables[i].name);   // assign the table's name
 
         // view.centerOn(item);
-        emit itemInserted(item);
 
         // add columns to the table
         for (int j = 0; j < tables[i].columns.size(); ++j) {
             item->addItem(tables[i].columns[j].name, tables[i].columns[j].type, tables[i].columns[j].isPrimary);
         }
+
+        emit itemInserted(item);
 
         focusRect = focusRect.united(item->sceneBoundingRect());
 

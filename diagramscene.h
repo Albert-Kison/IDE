@@ -39,7 +39,9 @@ public:
     void setItemColor(const QColor &color);
     void setFont(const QFont &font);
     QRectF drawDiagram(QList<Table> &tables, QList<Relationship> &relationships);
+    QRectF openScene(QJsonObject& sceneDataJSON);
     DiagramItem* drawTable();
+    DiagramTextItem* drawText();
 
 public slots:
     void setMode(Mode mode);
