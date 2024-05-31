@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # add_subdirectory("/Users/albertkison/desktop/cpp_sql" build_cpp_sql)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets PrintSupport)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets PrintSupport)
 find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 set(PROJECT_SOURCES
@@ -63,7 +63,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(Test1 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Sql)
+target_link_libraries(Test1 PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt6::Sql Qt${QT_VERSION_MAJOR}::PrintSupport)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

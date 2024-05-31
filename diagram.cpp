@@ -5,7 +5,7 @@
 
 #include <QtWidgets>
 #include <iostream>
-
+#include <QtPrintSupport/QPrinter>
 
 
 // std::ostream&  operator <<(std::ostream &stream,const QString &str)
@@ -489,6 +489,39 @@ void Diagram::drawDiagram(QList<Table> &tables, QList<Relationship> &relationshi
 void Diagram::openScene(QJsonObject &sceneDataJSON) {
     std::cout << "Called open scene in diagram" << std::endl;
     view->centerOn(scene->openScene(sceneDataJSON).center());
+}
+
+
+
+// export the scene to PDF
+void Diagram::exportToPdf(const QString &path) {
+    std::cout << "Export to pdf in diagram" << std::endl;
+
+    // Create a QPrinter
+    QPrinter printer;
+    printer.setOutputFormat(QPrinter::PdfFormat);
+    printer.setOutputFileName(path + QDir::separator() + "diagram.pdf");
+
+    // Create a QPainter
+    QPainter painter(&printer);
+    if (!painter.isActive()) {
+        qWarning() << "QPainter failed to initialize with file:" << path;
+        return;
+    }
+
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    // Calculate the bounding rectangle of the scene's content
+    QRectF contentRect = scene->itemsBoundingRect();
+
+
+    // Render the QGraphicsScene onto the QPainter using the contentRect
+    scene->render(&painter, QRectF(), contentRect);
+
+    // Finish painting
+    painter.end();
+
+    std::cout << "Finished export to pdf in diagram in " << path.toStdString() << std::endl;
 }
 
 

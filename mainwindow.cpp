@@ -7,6 +7,7 @@
 #include "QtWidgets/qlineedit.h"
 #include "QtWidgets/qpushbutton.h"
 #include "./ui_mainwindow.h"
+#include "QtWidgets/qscrollarea.h"
 // #include "diagram.h"
 #include <QVBoxLayout>
 #include <QDebug>
@@ -27,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     , layout(nullptr), projects(nullptr) // Initialize pointers
 {
     ui->setupUi(this);
+    setWindowTitle("Projects Manager");
     std::cout << "path in main" << std::endl;
     initUI();
 }
@@ -64,8 +66,8 @@ void MainWindow::displayProjects()
         file.close();
     }
 
-    projectsVerticalLayout = new QVBoxLayout;
-    projectsVerticalLayout->setAlignment(Qt::AlignTop);
+    // projectsVerticalLayout = new QVBoxLayout;
+    // projectsVerticalLayout->setAlignment(Qt::AlignTop);
     createProjectsLayout(projectsVerticalLayout, projects);
     layout->addLayout(projectsVerticalLayout);
 }
@@ -137,13 +139,21 @@ void MainWindow::initUI() {
     QWidget *centralWidget = new QWidget(this);
     layout = new QVBoxLayout(centralWidget);
 
-    displayProjects();
+    // Create a scroll area to hold the projects layout
+    QScrollArea *scrollArea = new QScrollArea(this);
+    scrollArea->setWidgetResizable(true); // Allow the scroll area to resize its widget
+    QWidget *scrollWidget = new QWidget(scrollArea);
+    projectsVerticalLayout = new QVBoxLayout(scrollWidget); // Initialize projects layout inside the scroll widget
+    projectsVerticalLayout->setAlignment(Qt::AlignTop);
+    scrollWidget->setLayout(projectsVerticalLayout);
+    scrollArea->setWidget(scrollWidget);
+    layout->addWidget(scrollArea);
 
+    displayProjects();
 
     QPushButton *createButton = new QPushButton("Create");
     layout->addWidget(createButton);
     connect(createButton, &QPushButton::clicked, this, &MainWindow::createButtonPressed);
-
 
     centralWidget->setLayout(layout);
 

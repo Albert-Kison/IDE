@@ -64,49 +64,59 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     painter->setPen(myPen);
     painter->setBrush(myColor);
 
+    // find the start and end positions
+    QPointF startPos = myStartItem->pos();
+    QPointF endPos = myEndItem->pos();
 
-    // find the point at which the arrow and polygon lines of the item intersect with each other
-    QLineF centerLine(myStartItem->pos(), myEndItem->pos());
-    QPolygonF endPolygon = myEndItem->polygon();
-    QPointF p1 = endPolygon.first() + myEndItem->pos();
-    QPointF intersectPoint;
-    for (int i = 1; i < endPolygon.count(); ++i) {
-        QPointF p2 = endPolygon.at(i) + myEndItem->pos();
-        QLineF polyLine = QLineF(p1, p2);
-        QLineF::IntersectionType intersectionType =
-            polyLine.intersects(centerLine, &intersectPoint);
-        if (intersectionType == QLineF::BoundedIntersection)
-            break;
-        p1 = p2;
+    // Calculate intermediate points for a 90-degree turn path
+    QPointF intermediate1, intermediate2;
+    if (std::abs(startPos.x() - endPos.x()) > std::abs(startPos.y() - endPos.y())) {
+        // More horizontal distance than vertical
+        intermediate1 = QPointF(endPos.x(), startPos.y());
+        intermediate2 = endPos;
+    } else {
+        // More vertical distance than horizontal
+        intermediate1 = QPointF(startPos.x(), endPos.y());
+        intermediate2 = endPos;
     }
 
-    setLine(QLineF(intersectPoint, myStartItem->pos()));
+    // Create the polyline path
+    QPolygonF linePath;
+    linePath << startPos << intermediate1 << intermediate2;
 
-    // calculate the angle between the x-axis and the line of the arrow
-    double angle = std::atan2(-line().dy(), line().dx());
+    // Draw the polyline
+    for (int i = 0; i < linePath.size() - 1; ++i) {
+        painter->drawLine(linePath[i], linePath[i + 1]);
+    }
 
-    // polygon points of the arrow head
-    QPointF arrowP1 = line().p1() + QPointF(sin(angle + M_PI / 3) * arrowSize,
-                                            cos(angle + M_PI / 3) * arrowSize);
-    QPointF arrowP2 = line().p1() + QPointF(sin(angle + M_PI - M_PI / 3) * arrowSize,
-                                            cos(angle + M_PI - M_PI / 3) * arrowSize);
+    // Calculate the angle for the arrow head
+    QLineF lastSegment(linePath[linePath.size() - 2], linePath.last());
+    double angle = std::atan2(-lastSegment.dy(), lastSegment.dx());
+
+    // Polygon points of the arrow head
+    QPointF arrowP1 = linePath.last() + QPointF(sin(angle + M_PI / 3) * arrowSize,
+                                                cos(angle + M_PI / 3) * arrowSize);
+    QPointF arrowP2 = linePath.last() + QPointF(sin(angle + M_PI - M_PI / 3) * arrowSize,
+                                                cos(angle + M_PI - M_PI / 3) * arrowSize);
 
     arrowHead.clear();
-    arrowHead << line().p1() << arrowP1 << arrowP2;
+    arrowHead << linePath.last() << arrowP1 << arrowP2;
 
-    // draw the arrow
-    painter->drawLine(line());
+    // Draw the arrow head
     painter->drawPolygon(arrowHead);
 
-    // if the arrow is selected, draw dashed lines around it
+    // If the arrow is selected, draw dashed lines around it
     if (isSelected()) {
         painter->setPen(QPen(myColor, 1, Qt::DashLine));
-        QLineF myLine = line();
-        myLine.translate(0, 4.0);
-        painter->drawLine(myLine);
-        myLine.translate(0,-8.0);
-        painter->drawLine(myLine);
+        for (int i = 0; i < linePath.size() - 1; ++i) {
+            QLineF myLine(linePath[i], linePath[i + 1]);
+            myLine.translate(0, 4.0);
+            painter->drawLine(myLine);
+            myLine.translate(0, -8.0);
+            painter->drawLine(myLine);
+        }
     }
+
 }
 
 

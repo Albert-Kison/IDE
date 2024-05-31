@@ -43,6 +43,7 @@ public:
 
     QJsonObject getSceneData();
     void openScene(QJsonObject &sceneDataJSON);
+    void exportToPdf(const QString &path);
 
 private slots:
     void backgroundButtonGroupClicked(QAbstractButton *button);

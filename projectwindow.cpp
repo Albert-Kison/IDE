@@ -2,13 +2,14 @@
 #include "QtCore/qfile.h"
 #include "QtCore/qjsondocument.h"
 #include "QtCore/qjsonobject.h"
+#include <QtNetwork/QNetworkAccessManager>
+#include <QtNetwork/QNetworkReply>
 #include "QtWidgets/qboxlayout.h"
 #include "QtWidgets/qmenubar.h"
 #include "QtWidgets/qpushbutton.h"
 #include "QtWidgets/qtabwidget.h"
 #include "sqlcodegenerator.h"
 #include "ui_projectwindow.h"
-#include "mainwindow.h"
 #include <iostream>
 #include <QDir>
 #include <QMessageBox>
@@ -19,6 +20,7 @@ ProjectWindow::ProjectWindow(QWidget *parent)
     , project(Project("", ""))
 {
     ui->setupUi(this);
+    setWindowTitle("Project Window");
 
     resize(1000, 800);
 
@@ -33,6 +35,9 @@ ProjectWindow::ProjectWindow(QWidget *parent)
     saveAction->setShortcut(QKeySequence::Save);
     // Connect the save action to a slot
     connect(saveAction, &QAction::triggered, this, &ProjectWindow::saveProject);
+
+    QAction *saveDiagramToPdfAction = fileMenu->addAction(tr("Export Diagram to PDF"));
+    connect(saveDiagramToPdfAction, &QAction::triggered, this, &ProjectWindow::exportDiagramToPdf);
 
     // Create a container widget to hold the CodeEditor
     // QWidget *centralWidget = new QWidget(this);
@@ -150,4 +155,11 @@ void ProjectWindow::saveProject() {
         // Handle error opening the file
         QMessageBox::warning(this, tr("Error"), tr("Unable to open file for writing."));
     }
+}
+
+
+
+void ProjectWindow::exportDiagramToPdf() {
+    std::cout << "Called export to pdf in project window" << std::endl;
+    diagram->exportToPdf(project.path);
 }

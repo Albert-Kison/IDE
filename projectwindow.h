@@ -31,6 +31,7 @@ private:
 public slots:
     void onOpenProject(const Project &project);
     void saveProject();
+    void exportDiagramToPdf();
 };
 
 #endif // PROJECTWINDOW_H

@@ -27,6 +27,7 @@ void SQLCodeGenerator::onGenerateSqlCodeClicked(QList<Table> &tables, QList<Rela
         sqlCode += "CREATE TABLE " + table.name + " (\n";
         QString primaryName = "";
 
+        // loop over the columns
         for (int i = 0; i < table.columns.size(); ++i) {
             sqlCode += "    " + table.columns[i].name + " " + table.columns[i].type + ",\n";
             if (table.columns[i].isPrimary) {
@@ -40,7 +41,8 @@ void SQLCodeGenerator::onGenerateSqlCodeClicked(QList<Table> &tables, QList<Rela
         // Add foreign key constraints
         foreach (Relationship rel, relationships) {
             if (rel.childTableName == table.name) {
-                sqlCode += "    FOREIGN KEY (" + rel.childColumnName + ") REFERENCES " + rel.parentTableName + "(" + rel.parentColumnName + ") ON DELETE CASCADE ON UPDATE CASCADE,\n";
+                sqlCode += "    FOREIGN KEY (" + rel.childColumnName + ") REFERENCES "
+                           + rel.parentTableName + "(" + rel.parentColumnName + ") ON DELETE CASCADE ON UPDATE CASCADE,\n";
             }
         }
 

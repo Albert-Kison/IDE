@@ -29,7 +29,8 @@ Highlighter::Highlighter(QTextDocument *parent)
                     << "\\bWHEN\\b" << "\\bTHEN\\b" << "\\bELSE\\b"
                     << "\\bEND\\b" << "\\bIS\\b" << "\\bNULL\\b"
                     << "\\bTRUE\\b" << "\\bFALSE\\b" << "\\bTOP\\b"
-                    << "\\bPRIMARY\\b" << "\\bKEY\\b";
+                    << "\\bPRIMARY\\b" << "\\bKEY\\b" << "\\bFOREIGN\\b"
+                    << "\\bREFERENCES\\b";
 
 
     QStringList sqlDataTypes;
