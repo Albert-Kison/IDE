@@ -23,6 +23,14 @@ class Arrow : public QObject, public QGraphicsLineItem
 public:
     enum { Type = UserType + 4 };
 
+    enum RelationshipType {
+        OneToOne,
+        OneToMany,
+        ManyToMany
+    };
+
+    RelationshipType myRelationshipType;
+
     Arrow(DiagramItem *startItem, DiagramItem *endItem,
           QGraphicsItem *parent = nullptr);
 
@@ -54,6 +62,8 @@ protected:
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
 
 private:
+    void drawBranches(DiagramItem *withItem, QPolygonF linePath, QPainter *painter);
+
     // diagram items that the arrow connects
     DiagramItem *myStartItem;
     DiagramItem *myEndItem;
