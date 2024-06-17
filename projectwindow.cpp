@@ -13,6 +13,7 @@
 #include <iostream>
 #include <QDir>
 #include <QMessageBox>
+#include <QFileDialog>
 
 ProjectWindow::ProjectWindow(QWidget *parent)
     : QDialog(parent)
@@ -86,6 +87,21 @@ ProjectWindow::ProjectWindow(QWidget *parent)
     connect(diagram, &Diagram::generateSqlClicked, sqlCodeGenerator, &SQLCodeGenerator::onGenerateSqlCodeClicked);
     connect(sqlCodeGenerator, &SQLCodeGenerator::codeGenerated, editor, &CodeEditor::onCodeGenerated);
     connect(sqlCodeGenerator, &SQLCodeGenerator::codeParsed, diagram, &Diagram::drawDiagram);
+
+    // when the code is generated
+    connect(sqlCodeGenerator, &SQLCodeGenerator::codeGenerated, [this]() {
+        QMessageBox::information(this, tr("SQL Code Generated"), tr("SQL code has been successfully generated."));
+    });
+
+    // When the diagram is generated
+    connect(diagram, &Diagram::diagramGenerated, [this]() {
+        QMessageBox::information(this, tr("Diagram Generated"), tr("Diagram has been successfully generated."));
+    });
+
+    // When error parsing SQL occured
+    connect(sqlCodeGenerator, &SQLCodeGenerator::onError, [this](QString& err) {
+        QMessageBox::information(this, tr("SQL Parsing Error"), err);
+    });
 }
 
 
@@ -161,5 +177,10 @@ void ProjectWindow::saveProject() {
 
 void ProjectWindow::exportDiagramToPdf() {
     std::cout << "Called export to pdf in project window" << std::endl;
-    diagram->exportToPdf(project.path);
+
+    QString folderName = QFileDialog::getExistingDirectory(this, tr("Export Diagram"), QDir::homePath());
+
+    if (!folderName.isEmpty()) {
+        diagram->exportToPdf(folderName);
+    }
 }

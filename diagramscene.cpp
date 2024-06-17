@@ -9,10 +9,10 @@
 
 
 
-DiagramScene::DiagramScene(QMenu *itemMenu, QObject *parent)
+DiagramScene::DiagramScene(QObject *parent)
     : QGraphicsScene(parent)
 {
-    myItemMenu = itemMenu;  // item actions
+    // myItemMenu = itemMenu;  // item actions
     myMode = MoveItem;  // default behavior
     line = nullptr;
     textItem = nullptr;
@@ -176,7 +176,7 @@ DiagramTextItem* DiagramScene::drawText() {
 
 
 DiagramItem* DiagramScene::drawTable() {
-    DiagramItem* item = new DiagramItem(myItemMenu);
+    DiagramItem* item = new DiagramItem();
     item->setBrush(myItemColor);
     connect(item, &DiagramItem::selectedChange,
             this, &DiagramScene::itemSelected);

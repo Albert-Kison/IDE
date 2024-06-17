@@ -20,11 +20,9 @@
 
 
 // create an item according to its type
-DiagramItem::DiagramItem(QMenu *contextMenu,
-                         QGraphicsItem *parent)
+DiagramItem::DiagramItem(QGraphicsItem *parent)
     : QGraphicsPolygonItem(parent)
     , table("New item")
-    , myContextMenu(contextMenu)
 {
 
     // Create polygons for the table name and the item list
@@ -174,12 +172,12 @@ QPixmap DiagramItem::image() const
 
 
 // show the context menu when the right mouse button is clicked
-void DiagramItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
-{
-    scene()->clearSelection();
-    setSelected(true);  // item must be selected to change its elevation with the bringToFront and sendToBack actions
-    myContextMenu->popup(event->screenPos());
-}
+// void DiagramItem::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
+// {
+//     scene()->clearSelection();
+//     setSelected(true);  // item must be selected to change its elevation with the bringToFront and sendToBack actions
+//     myContextMenu->popup(event->screenPos());
+// }
 
 
 

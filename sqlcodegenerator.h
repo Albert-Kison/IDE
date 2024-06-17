@@ -16,6 +16,7 @@ public:
 signals:
     void codeGenerated(QString code);
     void codeParsed(QList<Table> &tables, QList<Relationship> &relationships);
+    void onError(QString &error);
 
 public slots:
     void onGenerateSqlCodeClicked(QList<Table> &tables, QList<Relationship> &relationships);

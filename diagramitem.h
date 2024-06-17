@@ -28,7 +28,7 @@ public:
     // unique identifier of the class that is used by qgraphicsitem_cast(), which does dynamic casts of graphics items
     // enum { Type = UserType + 15 };
 
-    DiagramItem(QMenu *contextMenu, QGraphicsItem *parent = nullptr);
+    DiagramItem(QGraphicsItem *parent = nullptr);
 
     void removeArrow(Arrow *arrow);
     void removeArrows();
@@ -53,7 +53,7 @@ signals:
     void selectedChange(QGraphicsItem *item);
 
 protected:
-    void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
+    // void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
     QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
     // void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
     // void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
@@ -65,7 +65,7 @@ private:
     QPolygonF tableNamePolygon;
     QPolygonF itemListPolygon;
 
-    QMenu *myContextMenu;
+    // QMenu *myContextMenu;
     QList<Arrow *> arrows;
 };
 //! [0]

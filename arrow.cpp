@@ -138,10 +138,15 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *,
     // Draw the arrow head
     QPolygonF arrowHead;
     arrowHead << linePath.last() << arrowP1 << arrowP2;
-    painter->drawPolygon(arrowHead);
+    // painter->drawPolygon(arrowHead);
 
-    drawBranches(myStartItem, linePath, painter);
-    drawBranches(myEndItem, linePath, painter);
+
+    if (myRelationshipType == OneToMany) {
+        drawBranches(myEndItem, linePath, painter);
+    } else if (myRelationshipType == ManyToMany) {
+        drawBranches(myStartItem, linePath, painter);
+        drawBranches(myEndItem, linePath, painter);
+    }
 
     // If the arrow is selected, draw dashed lines around it
     if (isSelected()) {

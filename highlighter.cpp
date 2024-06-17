@@ -12,37 +12,66 @@ Highlighter::Highlighter(QTextDocument *parent)
     keywordFormat.setForeground(Qt::darkMagenta);
     keywordFormat.setFontWeight(QFont::Bold);
     QStringList keywordPatterns;
-    keywordPatterns << "\\bSELECT\\b" << "\\bFROM\\b" << "\\bWHERE\\b"
-                    << "\\bAND\\b" << "\\bOR\\b" << "\\bNOT\\b"
-                    << "\\bINSERT\\b" << "\\bINTO\\b" << "\\bVALUES\\b"
-                    << "\\bUPDATE\\b" << "\\bSET\\b" << "\\bDELETE\\b"
-                    << "\\bCREATE\\b" << "\\bTABLE\\b" << "\\bALTER\\b"
-                    << "\\bDROP\\b" << "\\bINDEX\\b" << "\\bVIEW\\b"
-                    << "\\bJOIN\\b" << "\\bINNER\\b" << "\\bLEFT\\b"
-                    << "\\bRIGHT\\b" << "\\bOUTER\\b" << "\\bFULL\\b"
-                    << "\\bON\\b" << "\\bGROUP\\b" << "\\bBY\\b"
-                    << "\\bORDER\\b" << "\\bASC\\b" << "\\bDESC\\b"
-                    << "\\bHAVING\\b" << "\\bDISTINCT\\b" << "\\bAS\\b"
-                    << "\\bCOUNT\\b" << "\\bSUM\\b" << "\\bAVG\\b"
-                    << "\\bMIN\\b" << "\\bMAX\\b" << "\\bIN\\b"
-                    << "\\bBETWEEN\\b" << "\\bLIKE\\b" << "\\bCASE\\b"
-                    << "\\bWHEN\\b" << "\\bTHEN\\b" << "\\bELSE\\b"
-                    << "\\bEND\\b" << "\\bIS\\b" << "\\bNULL\\b"
-                    << "\\bTRUE\\b" << "\\bFALSE\\b" << "\\bTOP\\b"
-                    << "\\bPRIMARY\\b" << "\\bKEY\\b" << "\\bFOREIGN\\b"
-                    << "\\bREFERENCES\\b";
-
+    keywordPatterns << "\\bABORT\\b" << "\\bACTION\\b" << "\\bADD\\b"
+                    << "\\bAFTER\\b" << "\\bALL\\b" << "\\bALTER\\b"
+                    << "\\bALWAYS\\b" << "\\bANALYZE\\b" << "\\bAND\\b"
+                    << "\\bAS\\b" << "\\bASC\\b" << "\\bATTACH\\b"
+                    << "\\bAUTOINCREMENT\\b" << "\\bBEFORE\\b" << "\\bBEGIN\\b"
+                    << "\\bBETWEEN\\b" << "\\bBY\\b" << "\\bCASCADE\\b"
+                    << "\\bCASE\\b" << "\\bCAST\\b" << "\\bCHECK\\b"
+                    << "\\bCOLLATE\\b" << "\\bCOLUMN\\b" << "\\bCOMMIT\\b"
+                    << "\\bCONFLICT\\b" << "\\bCONSTRAINT\\b" << "\\bCREATE\\b"
+                    << "\\bCROSS\\b" << "\\bCURRENT\\b" << "\\bCURRENT_DATE\\b"
+                    << "\\bCURRENT_TIME\\b" << "\\bCURRENT_TIMESTAMP\\b" << "\\bDATABASE\\b"
+                    << "\\bDEFAULT\\b" << "\\bDEFERRABLE\\b" << "\\bDEFERRED\\b"
+                    << "\\bDELETE\\b" << "\\bDESC\\b" << "\\bDETACH\\b"
+                    << "\\bDISTINCT\\b" << "\\bDO\\b" << "\\bDROP\\b"
+                    << "\\bEACH\\b" << "\\bELSE\\b" << "\\bEND\\b"
+                    << "\\bESCAPE\\b" << "\\bEXCEPT\\b" << "\\bEXCLUDE\\b"
+                    << "\\bEXCLUSIVE\\b" << "\\bEXISTS\\b" << "\\bEXPLAIN\\b"
+                    << "\\bFAIL\\b" << "\\bFILTER\\b" << "\\bFIRST\\b"
+                    << "\\bFOLLOWING\\b" << "\\bFOR\\b" << "\\bFOREIGN\\b"
+                    << "\\bFROM\\b" << "\\bFULL\\b" << "\\bGENERATED\\b"
+                    << "\\bGLOB\\b" << "\\bGROUP\\b" << "\\bGROUPS\\b"
+                    << "\\bHAVING\\b" << "\\bIF\\b" << "\\bIGNORE\\b"
+                    << "\\bIMMEDIATE\\b" << "\\bIN\\b" << "\\bINDEX\\b"
+                    << "\\bINDEXED\\b" << "\\bINITIALLY\\b" << "\\bINNER\\b"
+                    << "\\bINSERT\\b" << "\\bINSTEAD\\b" << "\\bINTERSECT\\b"
+                    << "\\bINTO\\b" << "\\bIS\\b" << "\\bISNULL\\b"
+                    << "\\bJOIN\\b" << "\\bKEY\\b" << "\\bLAST\\b"
+                    << "\\bLEFT\\b" << "\\bLIKE\\b" << "\\bLIMIT\\b"
+                    << "\\bMATCH\\b" << "\\bNATURAL\\b" << "\\bNO\\b"
+                    << "\\bNOT\\b" << "\\bNOTHING\\b" << "\\bNOTNULL\\b"
+                    << "\\bNULL\\b" << "\\bNULLS\\b" << "\\bOF\\b"
+                    << "\\bOFFSET\\b" << "\\bON\\b" << "\\bOR\\b"
+                    << "\\bORDER\\b" << "\\bOTHERS\\b" << "\\bOUTER\\b"
+                    << "\\bOVER\\b" << "\\bPARTITION\\b" << "\\bPLAN\\b"
+                    << "\\bPRAGMA\\b" << "\\bPRECEDING\\b" << "\\bPRIMARY\\b"
+                    << "\\bQUERY\\b" << "\\bRAISE\\b" << "\\bRANGE\\b"
+                    << "\\bRECURSIVE\\b" << "\\bREFERENCES\\b" << "\\bREGEXP\\b"
+                    << "\\bREINDEX\\b" << "\\bRELEASE\\b" << "\\bRENAME\\b"
+                    << "\\bREPLACE\\b" << "\\bRESTRICT\\b" << "\\bRETURNING\\b"
+                    << "\\bRIGHT\\b" << "\\bROLLBACK\\b" << "\\bROW\\b"
+                    << "\\bROWS\\b" << "\\bSAVEPOINT\\b" << "\\bSELECT\\b"
+                    << "\\bSET\\b" << "\\bTABLE\\b" << "\\bTEMP\\b"
+                    << "\\bTEMPORARY\\b" << "\\bTHEN\\b" << "\\bTIES\\b"
+                    << "\\bTO\\b" << "\\bTRANSACTION\\b" << "\\bTRIGGER\\b"
+                    << "\\bUNBOUNDED\\b" << "\\bUNION\\b" << "\\bUNIQUE\\b"
+                    << "\\bUPDATE\\b" << "\\bUSING\\b" << "\\bVACUUM\\b"
+                    << "\\bVALUES\\b" << "\\bVIEW\\b" << "\\bVIRTUAL\\b"
+                    << "\\bWHEN\\b" << "\\bWHERE\\b" << "\\bWINDOW\\b"
+                    << "\\bWITH\\b" << "\\bWITHOUT\\b";
 
     QStringList sqlDataTypes;
-    sqlDataTypes << "\\bINT\\b" << "\\bVARCHAR\\b" << "\\bCHAR\\b"
-                 << "\\bTEXT\\b" << "\\bDATE\\b" << "\\bDATETIME\\b"
-                 << "\\bTIMESTAMP\\b" << "\\bDECIMAL\\b" << "\\bNUMERIC\\b"
-                 << "\\bFLOAT\\b" << "\\bREAL\\b" << "\\bDOUBLE\\b"
-                 << "\\bBOOLEAN\\b" << "\\bBIT\\b" << "\\bTINYINT\\b"
-                 << "\\bSMALLINT\\b" << "\\bMEDIUMINT\\b" << "\\bBIGINT\\b"
-                 << "\\bBINARY\\b" << "\\bVARBINARY\\b" << "\\bBLOB\\b"
-                 << "\\bTINYBLOB\\b" << "\\bMEDIUMBLOB\\b" << "\\bLONGBLOB\\b"
-                 << "\\bENUM\\b" << "\\bSET\\b";
+    sqlDataTypes << "\\bNULL\\b" << "\\bINTEGER\\b" << "\\bREAL\\b"
+                 << "\\bTEXT\\b" << "\\bBLOB\\b"
+                 << "\\bBOOLEAN\\b" << "\\bDATE\\b" << "\\bDATETIME\\b"
+                 << "\\bINT\\b" << "\\bVARCHAR\\b" << "\\bCHAR\\b"
+                 << "\\bFLOAT\\b" << "\\bNUMERIC\\b" << "\\bDECIMAL\\b"
+                 << "\\bDOUBLE\\b" << "\\bBOOLEAN\\b" << "\\bBIT\\b"
+                 << "\\bTINYINT\\b" << "\\bSMALLINT\\b" << "\\bMEDIUMINT\\b"
+                 << "\\bBIGINT\\b" << "\\bUNSIGNED\\b" << "\\bINT2\\b"
+                 << "\\bINT8\\b";
 
 
     // highlight rules for each keyword
@@ -60,34 +89,14 @@ Highlighter::Highlighter(QTextDocument *parent)
         highlightingRules.append(rule);
     }
 
-    // // highlight rule for class names
-    // classFormat.setFontWeight(QFont::Bold);
-    // classFormat.setForeground(Qt::darkMagenta);
-    // rule.pattern = QRegularExpression("\\bQ[A-Za-z]+\\b");
-    // rule.format = classFormat;
-    // highlightingRules.append(rule);
-
-    // // highlight rule for single line comments
-    // singleLineCommentFormat.setForeground(Qt::red);
-    // rule.pattern = QRegularExpression("//[^\n]*");
-    // rule.format = singleLineCommentFormat;
-    // highlightingRules.append(rule);
+    // highlight rule for single line comments
+    singleLineCommentFormat.setForeground(Qt::gray);
+    rule.pattern = QRegularExpression("--[^\n]*");
+    rule.format = singleLineCommentFormat;
+    highlightingRules.append(rule);
 
     // // highlight rule for multiline comments
     // multiLineCommentFormat.setForeground(Qt::red);
-
-    // // highlight rule for strings
-    // quotationFormat.setForeground(Qt::darkGreen);
-    // rule.pattern = QRegularExpression("\".*\"");
-    // rule.format = quotationFormat;
-    // highlightingRules.append(rule);
-
-    // // highlight rule for function names
-    // functionFormat.setFontItalic(true);
-    // functionFormat.setForeground(Qt::blue);
-    // rule.pattern = QRegularExpression("\\b[A-Za-z0-9_]+(?=\\()");
-    // rule.format = functionFormat;
-    // highlightingRules.append(rule);
 
     // regular expressions for multiline comments
     commentStartExpression = QRegularExpression("/\\*");

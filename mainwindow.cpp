@@ -15,6 +15,7 @@
 #include <QFileDialog>
 #include <QTextStream>
 #include <QInputDialog>
+#include <QMessageBox>
 
 // std::ostream&  operator <<(std::ostream &stream,const QString &str)
 // {
@@ -119,12 +120,19 @@ void MainWindow::createProjectsLayout(QVBoxLayout *projectsVerticalLayout, QList
         horizontalLayout->addWidget(deleteProjectButton);
 
         connect(deleteProjectButton, &QPushButton::clicked, [this, i, projectsVerticalLayout, projects]() {
-            deleteProjectButtonPressed(projects->at(i));
+            // Ask the user for confirmation before deleting the project
+            QMessageBox::StandardButton reply;
+            reply = QMessageBox::question(this, tr("Delete Project"), tr("Are you sure you want to delete this project?"),
+                                          QMessageBox::Yes | QMessageBox::No);
 
-            projects->removeAt(i); // Remove the project at the specified index
-            saveProjects(); // Save the updated project list
-            deleteLayout(projectsVerticalLayout);
-            createProjectsLayout(projectsVerticalLayout, projects);
+            if (reply == QMessageBox::Yes) {
+                deleteProjectButtonPressed(projects->at(i));
+
+                projects->removeAt(i); // Remove the project at the specified index
+                saveProjects(); // Save the updated project list
+                deleteLayout(projectsVerticalLayout);
+                createProjectsLayout(projectsVerticalLayout, projects);
+            }
         });
 
         projectsVerticalLayout->addLayout(horizontalLayout);
@@ -211,9 +219,7 @@ void MainWindow::deleteProjectButtonPressed(const Project& project) {
 
 
 
-void MainWindow::createButtonPressed() {
-    hide();
-
+void MainWindow::createButtonPressed() {    
     // Get the desired directory name from the user
     QString projectName = QInputDialog::getText(this, tr("Enter Project Name"), tr("Project Name:"), QLineEdit::Normal, "");
 
@@ -254,6 +260,9 @@ void MainWindow::createButtonPressed() {
             });
 
             emit openProject(newProject);
+
+            // hide the main window
+            hide();
 
             projectWindow->show();
         }

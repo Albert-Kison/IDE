@@ -78,6 +78,7 @@ public slots:
 
 signals:
     void generateSqlClicked(QList<Table> &tables, QList<Relationship> &relationships);
+    void diagramGenerated();
 
 private:
     void createActions();

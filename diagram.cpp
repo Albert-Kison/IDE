@@ -21,9 +21,9 @@ Diagram::Diagram()
 {
     // create the widgets, layouts, and the scene
     createActions();
-    createMenus();
+    // createMenus();
 
-    scene = new DiagramScene(itemMenu, this);
+    scene = new DiagramScene(this);
     scene->setSceneRect(QRectF(0, 0, 5000, 5000));
 
     // in order to manipulate the buttons in the tool box
@@ -427,7 +427,7 @@ void Diagram::deleteItem()
     }
 
     scene->clearSelection(); // Deselect all items in the scene
-    sideWidget->hide(); // Hide the tablePropertiesWidget
+    sideWidget->hide(); // Hide the properties widget
 }
 
 
@@ -453,7 +453,25 @@ void Diagram::generateSql() {
         Arrow *arrow = qgraphicsitem_cast<Arrow *>(item);
         if (arrow) {
             for (int i = 0; i < arrow->columnRelationships.size(); ++i) {
-                Relationship rel(arrow->startItem()->table.name, arrow->columnRelationships[i].startColumn->name, arrow->endItem()->table.name, arrow->columnRelationships[i].endColumn->name);
+
+                // Create Relationship instance
+                Relationship::RelationshipType relationshipType;
+                switch (arrow->myRelationshipType) {
+                case Arrow::OneToOne:
+                    relationshipType = Relationship::OneToOne;
+                    break;
+                case Arrow::OneToMany:
+                    relationshipType = Relationship::OneToMany;
+                    break;
+                case Arrow::ManyToMany:
+                    relationshipType = Relationship::ManyToMany;
+                    break;
+                default:
+                    // Handle invalid relationship type
+                    break;
+                }
+
+                Relationship rel(arrow->startItem()->table.name, arrow->columnRelationships[i].startColumn->name, arrow->endItem()->table.name, arrow->columnRelationships[i].endColumn->name, relationshipType);
                 relationships << rel;
             }
         }
@@ -481,6 +499,7 @@ void Diagram::createTextButtonClicked() {
 
 void Diagram::drawDiagram(QList<Table> &tables, QList<Relationship> &relationships) {
     view->centerOn(scene->drawDiagram(tables, relationships).center());
+    emit diagramGenerated();
 }
 
 
@@ -511,7 +530,7 @@ void Diagram::exportToPdf(const QString &path) {
 
     painter.setRenderHint(QPainter::Antialiasing);
 
-    // Calculate the bounding rectangle of the scene's content
+    // Get the bounding rectangle of the scene's content
     QRectF contentRect = scene->itemsBoundingRect();
 
 
@@ -962,6 +981,69 @@ void Diagram::itemSelected(QGraphicsItem *item)
 
         QVBoxLayout *verticalMainLayout = new QVBoxLayout;
         verticalMainLayout->setAlignment(Qt::AlignTop);
+
+
+        // From: < start table name >
+        QLabel *fromTableLabel = new QLabel("From: ");
+        QLabel *fromTabelNameLabel = new QLabel(arrow->startItem()->table.name);
+        QHBoxLayout *fromTableLayout = new QHBoxLayout;
+        fromTableLayout->addWidget(fromTableLabel);
+        fromTableLayout->addWidget(fromTabelNameLabel);
+        verticalMainLayout->addLayout(fromTableLayout);
+
+        // To: < end table name >
+        QLabel *toTableLabel = new QLabel("To: ");
+        QLabel *toTabelNameLabel = new QLabel(arrow->endItem()->table.name);
+        QHBoxLayout *toTableLayout = new QHBoxLayout;
+        toTableLayout->addWidget(toTableLabel);
+        toTableLayout->addWidget(toTabelNameLabel);
+        verticalMainLayout->addLayout(toTableLayout);
+
+
+        // Change relationship type
+        QLabel *relationshipTypeLabel = new QLabel("Relationship Type:");
+        QComboBox *relationshipTypeComboBox = new QComboBox;
+        relationshipTypeComboBox->addItem("One to One");
+        relationshipTypeComboBox->addItem("One to Many");
+        relationshipTypeComboBox->addItem("Many to Many");
+
+        // Set the initial selection based on the arrow's current relationship type
+        switch (arrow->myRelationshipType) {
+            case Arrow::OneToOne:
+                relationshipTypeComboBox->setCurrentIndex(0);
+                break;
+            case Arrow::OneToMany:
+                relationshipTypeComboBox->setCurrentIndex(1);
+                break;
+            case Arrow::ManyToMany:
+                relationshipTypeComboBox->setCurrentIndex(2);
+                break;
+            default:
+                break;
+        }
+
+        // Connect the combo box's signal to a slot for updating the arrow's relationship type
+        connect(relationshipTypeComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [arrow](int index) {
+            switch (index) {
+            case 0:
+                arrow->myRelationshipType = Arrow::OneToOne;
+                break;
+            case 1:
+                arrow->myRelationshipType = Arrow::OneToMany;
+                break;
+            case 2:
+                arrow->myRelationshipType = Arrow::ManyToMany;
+                break;
+            default:
+                break;
+            }
+            arrow->update(); // update the arrow based on the new relationship type
+        });
+
+        QHBoxLayout *relationshipTypeLayout = new QHBoxLayout;
+        relationshipTypeLayout->addWidget(relationshipTypeLabel);
+        relationshipTypeLayout->addWidget(relationshipTypeComboBox);
+        verticalMainLayout->addLayout(relationshipTypeLayout);
 
         // Create the close button
         QPushButton *closeButton = new QPushButton("Close");

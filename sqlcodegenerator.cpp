@@ -29,7 +29,14 @@ void SQLCodeGenerator::onGenerateSqlCodeClicked(QList<Table> &tables, QList<Rela
 
         // loop over the columns
         for (int i = 0; i < table.columns.size(); ++i) {
-            sqlCode += "    " + table.columns[i].name + " " + table.columns[i].type + ",\n";
+            bool unique = false;
+            foreach (Relationship rel, relationships) {
+                if (rel.childTableName == table.name && table.columns[i].name == rel.childColumnName && rel.relationshipType == Relationship::OneToOne && !table.columns[i].isPrimary) {
+                    unique = true;
+                }
+            }
+
+            sqlCode += "    " + table.columns[i].name + " " + table.columns[i].type + (unique ? " UNIQUE" : "") + ",\n";
             if (table.columns[i].isPrimary) {
                 primaryName = table.columns[i].name;
             }
@@ -84,6 +91,8 @@ void SQLCodeGenerator::parseSql(QString &code) {
         // Execute each statement separately
         if (!query.exec(statement)) {
             std::cout << "Error executing SQL statement: " << query.lastError().text().toStdString() << std::endl;
+            QString err = query.lastError().text();
+            emit onError(err);
             db.close();
             return;
         }
@@ -95,6 +104,9 @@ void SQLCodeGenerator::parseSql(QString &code) {
     QList<Relationship> diagramRelationships;
 
     for (const QString& tableName : tables) {
+        if (tableName == "sqlite_sequence") {
+            continue;
+        }
         std::cout << "Table:" << tableName.toStdString() << std::endl;
         Table table(tableName);
 
@@ -104,7 +116,7 @@ void SQLCodeGenerator::parseSql(QString &code) {
             QSqlField field = record.field(i);
             QString typeName;
             switch (field.metaType().id()) {
-                case QMetaType::Bool: typeName = "BOOLEAN"; break; // Map QVariant::Bool to SQL boolean type
+                case QMetaType::Bool: typeName = "BOOLEAN"; break;
                 case QMetaType::Int: typeName = "INTEGER"; break;
                 case QMetaType::UInt: typeName = "UINT"; break;
                 case QMetaType::LongLong: typeName = "BIGINT"; break;
@@ -115,7 +127,7 @@ void SQLCodeGenerator::parseSql(QString &code) {
                 case QMetaType::QDateTime: typeName = "DATE"; break;
                 case QMetaType::QByteArray: typeName = "BLOB"; break;
                 case QMetaType::Char: typeName = "CHAR"; break;
-                // Add more cases for other SQL data types as needed
+
                 default: typeName = "UNKNOWN";
             };
             std::cout << field.metaType().id() << std::endl;
@@ -136,11 +148,13 @@ void SQLCodeGenerator::parseSql(QString &code) {
                           << ", Referenced Table:" << referencedTable.toStdString() << std::endl;
 
                 // Store the foreign key relationship
-                diagramRelationships << Relationship(referencedTable, referencedColumn, tableName, columnName);
+                diagramRelationships << Relationship(referencedTable, referencedColumn, tableName, columnName, Relationship::OneToMany);
             }
         } else {
             std::cout << "Error retrieving foreign keys: " << query.lastError().text().toStdString() << std::endl;
         }
+
+
 
         // Retrieve primary key columns using PRAGMA table_info
         QString primaryKeyQuery = QString("PRAGMA table_info(%1)").arg(tableName);
