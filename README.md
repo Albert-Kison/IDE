@@ -20,6 +20,9 @@ This desktop application allows users to visually design database schemas and wr
 - Managing multiple windows and dialogs
 - Application architecture and component interaction
 
+## Screenshot
+![Designer View](https://github.com/Albert-Kison/IDE/blob/main/Screenshot_Visual_Database_Designer.png)
+
 ## How to Run
 1. Clone this repository
 2. Open the `.pro` file with Qt Creator
